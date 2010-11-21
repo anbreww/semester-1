@@ -1,0 +1,104 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                   Semester project 1	  	              %%
+%%              Smart home energy monitoring   		      %%
+%%                       Andrew Watson                        %%
+%%                           MT-MA1                           %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{includes/preamble}
+\begin{document}
+\begin{titlepage}
+\nocite{*}      % to make sure bibliography appears in the correct order
+  \begin{center}
+     
+     
+    % Upper part of the page
+    %\includegraphics[width=4cm]{logo_epfl}\\[0.5cm]
+     
+    \vfill 
+    \textsc{\LARGE Ecole Polytechnique Fédérale de Lausanne }\\[1.0cm]
+
+    { \huge \bfseries Smart home energy monitoring}\\[0.4cm]
+    \includegraphics[width=12cm]{images/logo_epfl}\\[0.5cm]
+
+    \vfill
+
+     
+    % Bottom of the page
+    Andrew \textsc{Watson}\\[0.5cm] 
+    Version 0.1.1\\[0.5cm]
+    {\large \today} 
+     
+  \end{center}
+
+\end{titlepage}
+%\maketitle
+
+\newpage{}
+
+%\fancyhead{}
+\fancyfoot{}
+\lhead{}
+\cfoot{\thepage}        % numéro de page..
+\lfoot{Semester Project}
+%\rfoot{\today}
+\rfoot{\today} %% TODO : fix the date
+
+%\begin{abstract}
+%\end{abstract}
+
+% CUSTOM COMMANDS FOR THIS REPORT
+\newcommand{\expr}[1]{\og \emph{{#1}} \fg} % \expr{word} => « Word »
+\newcommand{\important}[1]{\textbf{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+%\renewcommand\contentsname{Plan}  % Rename ``Table des Matières''
+\tableofcontents{}
+
+\newpage
+
+%%%% BEGIN : LSTLISTINGS CONFIG %%%%%%
+%%%% TODO : MOVE TO SEPARATE FILE ONCE FINISHED %%%%%
+%% see http://www.jorgemarsal.com/blog/2009/06/08/source-code-snippets-in-latex/
+\lstset{language=C}
+%\definecolor{lightgrey}{RGB}{200,200,200}
+\definecolor{grey92}{gray}{0.92}
+\definecolor{grey75}{gray}{0.75}
+\definecolor{grey45}{gray}{0.45}
+\lstdefinestyle{console}
+{
+  numbers=none,
+  basicstyle=\bf\ttfamily,
+  backgroundcolor=\color{grey92},
+  frame=lrtb,
+  framerule=0.5pt,
+  linewidth=\textwidth,
+}
+\lstdefinestyle{avr-c}
+{
+  style=console
+}
+
+\lstset{
+  style=console
+}
+
+%%%%%%% END : LSTLISTINGS CONFIG %%%%%%%%
+
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+\markboth{Introduction}{\MakeUppercase{Introduction}}
+This is the introduction for my semester project
+
+\section{Some examples of code}
+\begin{lstlisting}[style=avr-c]
+  int main(void)
+  {
+    code_example();
+  }
+\end{lstlisting}
+
+There's also a way of including \code{code} inline.
+
+\end{document}
