@@ -91,6 +91,46 @@
 \markboth{Introduction}{\MakeUppercase{Introduction}}
 This is the introduction for my semester project
 
+\section{Context and previous work}
+Here, I talk about Thierry's project, and a few words about the other projects,
+and how they fit together as a system.
+
+\section{Overview}
+Describe how my system works, and why it's useful
+
+\section{Recherche de solutions}
+List some options that were considered and discarded, and why.
+
+\subsection{Power supply}
+Why NiMH? Why not LiPO? Why not use a DC-DC converter?
+
+\subsection{Wireless}
+Why ZigBee? Within ZigBee solutions, why XBees?
+
+\subsection{Microcontroller}
+Why go for an ATXMEGA?
+Explain the reason for getting a 64-pin instead of the cheaper XMEGAxxA4.
+Don't forget to mention : in the hardware design, only I/Os that are also
+available on the 44 pin version were used. Also, because of the good modularity
+of the XMEGA family, the code can be ported without any changes from one device
+to another.
+
+\section{Network topology}
+
+\section{Hardware design}
+
+Go over hardware in blocks
+
+Explain the difference between receiver and emitters
+
+Show details of sensor expansion port
+
+\section{Software considerations}
+
+\section{Low-power design}
+
+\section{Test results}
+
 \section{Some examples of code}
 \begin{lstlisting}[style=avr-c]
   int main(void)
