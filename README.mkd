@@ -1,0 +1,5 @@
+# Semester Project 1 ########################################
+
+LaTeX Sources for my first semester project (2010 - MA-1)
+
+Currently extremely incomplete (structure only)
