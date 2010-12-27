@@ -274,6 +274,46 @@ wake up periodically to sample the potentiometer.
 
 \section{Software considerations}
 
+As all the nodes (gateway and end devices) share the same hardware platform, it
+makes sense to share as much as possible of the code base between devices.
+
+The original idea had been to write the same code for all the devices, who could
+then automatically detect which role they were to play in the network, and
+configure themselves at runtime to fulfil the necessary function. This approach,
+though probably feasible in terms of code size, would have required too much
+work early on in the hardware design, as well as more code than could probably
+be expected for a semester project. It would in my mind be more interesting to
+have a very modular system than to hard-code the functionality of various
+modules, and have several code bases for different nodes.
+
+With this in mind, the code is organised in the following way:
+
+% todo : insert diagram of code hierarchy
+
+All code shares a common root. The folder \bash{xmega\_libs} contain libraries
+that are specific to the XMEGA microcontroller, mostly provided by Atmel.
+Although many hardware-level functions and registers were used in the main
+program, mainly for lack of time, the main objective would be to abstract all
+the hardware-level functionality to these libraries, to ease portability to
+another microcontroller platform.
+
+Next we have \bash{project\_libs}, which contains all shared code relevant to
+this semester project. In here, we have libraries for communicating with the
+XBee radios, sending commands to the Powerline modules, as well as collecting
+information from all types of sensor modules.
+
+Finally, in the \bash{project\_libs} folder, the \bash{hardware.h} file contains
+all the pin definitions relevant to the layout of the board. All functions
+should use the definitions provided in this file rather than hard-code port
+names. This way, existing code can be made to work on a different hardware
+design simply by replacing the \bash{hardware.h} file.
+
+Lastly, since each type of node behaves differently, it has its own set of
+files. The \bash{motion\_sensor} folder contains the behaviour for a motion
+sensing node, \bash{dimmer\_board} contains the code for a dimmer node, and so
+on. Usually, the \bash{main.c} file is the only file that differs between the
+various nodes.
+
 \section{Low-power design}
 
 \section{Cost considerations}
