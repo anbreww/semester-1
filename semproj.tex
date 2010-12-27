@@ -167,12 +167,32 @@ Show details of sensor expansion port
 Each sensor node consists of a basic board and a sensor add-on. The basic board
 provides standard features common to all the nodes, such as network
 connectivity, power management, and processing.
-These boards are made of several blocks:
+
+\subsubsection{Overview}
+
+The main board is made up of several elements. At its core is an ATXMEGA. This
+microcontroller was chosen mainly for its scalability and low power
+requirements. The microcontroller communicates through a serial link with the
+XBee, its radio transmitter.
+
+The sensor nodes have a few on-board sensors which are available on all versions
+of the board. These include an ambient light sensor, which is pointed towards
+the front of the board, some measurements of supply voltages, as well as
+temperature of the microcontroller. As the power usage is meant to be very low,
+it was assumed that the temperature readings would not suffer very much from
+the activity of the chip itself.
+
+Power is supplied mainly by batteries which are placed directly on the board,
+and can be recharged from an external interface. A power switch can be toggled
+by the user to turn the node on and off.
 
 \subsubsection{Microcontroller}
 
-The main processing unit on these nodes is an ATXMEGA. It was chosen for its
-scalability, relatively new architecture, and low-power requirements.
+The current version of the board uses a 64-pin microcontroller, because it
+was impossible to source a 44-pin version at design time. The schematics and
+code were designed with a 44 pin microcontroller in mind, and it would be
+trivial to adapt the design to the smaller version to reduce cost, and use less
+space on the board.
 
 
 \subsubsection{Power supply}
@@ -196,6 +216,17 @@ measuring its own supply voltage, using a 10x voltage divider with a 1\unit{V}
 reference.
 
 \subsubsection{Debug}
+
+The nodes were designed to function the same way if the microcontroller was
+replaced by a 44-pin version. This leaves one port unused on the ATMEGA64A3,
+which was thus used as a debug port. Five pins are available on the right side
+of the device to display status on an LED or to send debug data through USARTF0.
+
+\subsubsection{Discarded features}
+
+Several features originally included in the design or enumerated during the
+design phase were discarded. I will go over some of these and explain the
+reasons behind these choices.
 
 \subsection{Sensor boards}
 
@@ -244,6 +275,29 @@ wake up periodically to sample the potentiometer.
 \section{Software considerations}
 
 \section{Low-power design}
+
+\section{Cost considerations}
+
+For the sake of ease of development, some sacrifices were made in the area of
+cost. For starters, the ATXMEGA is not very well suited to extremely low-cost
+designs, as it is quite a lot more expensive than some competing solutions,
+especially the PIC24F series and Cortex M3. On the other hand, it overs a very
+modern architecture with many features to experiment with, which allows a lot of
+freedom for development and experimenting.
+
+% todo : mention choice of xmegaA3 over A4 and stuff
+Moreover,
+
+The other main area were cost was overlooked at the benefit of development time
+is the wireless interface. Indeed, the average cost of an XBee module is
+approximately \$22, whereas it is possible to source modules from Microchip for
+instance that cost less than half as much. However, these require a one-time
+purchase of an expensive software stack (which is not included), as well as a
+more complex development. Therefore, the XBee modules were chosen, for their
+seemingly ``plug-and-play'' functionality. If more time could be spend on the
+development, it would be reasonable to expect to spend up to three times less on
+the radio transmitter modules, while keeping the same functionality and
+compatibility with the existing modules.
 
 \section{Test results}
 
