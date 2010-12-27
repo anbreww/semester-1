@@ -13,5 +13,8 @@ pdfquiet:
 bib:
 	pdflatex $(TEXSOURCE) && pdflatex $(TEXSOURCE) && bibtex $(BASE_NAME) && pdflatex $(TEXSOURCE) && evince $(OUTPUT)
 
+todo:
+	grep -i -n --colour todo *.tex 
+
 clean:
 	rm -rf *.bbl *.aux *.blg *.log *.toc
