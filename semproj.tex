@@ -162,6 +162,41 @@ Explain the difference between receiver and emitters
 
 Show details of sensor expansion port
 
+\subsection{Base board}
+
+Each sensor node consists of a basic board and a sensor add-on. The basic board
+provides standard features common to all the nodes, such as network
+connectivity, power management, and processing.
+These boards are made of several blocks:
+
+\subsubsection{Microcontroller}
+
+The main processing unit on these nodes is an ATXMEGA. It was chosen for its
+scalability, relatively new architecture, and low-power requirements.
+
+
+\subsubsection{Power supply}
+% TODO : insert picture of power supply design
+The nodes can have various power sources. They were designed to function on two
+AA batteries, which provide voltages between 2 and \unit{3.2}{V}. All components on
+the board were chosen to operate in this voltage range.
+
+To reduce the size requirements, the batteries are placed directly on the board,
+on either side of the the radio transmitter.
+
+On the left side of the board, a 4-pin JST header provides a connection to an
+external charger (or solar power module). The power lines can be disconnected by
+the main controller, and two communication lines are available for information
+exchange between the sensor node and its power source. These lines are connected
+to the ATXMEGA's USART lines in case serial communication is desired.
+
+In addition to this, the input voltage can be measured with a voltage divider,
+and disconnected if it is not needed. The ATXMEGA has a built-in module for
+measuring its own supply voltage, using a 10x voltage divider with a 1\unit{V}
+reference.
+
+\subsubsection{Debug}
+
 \subsection{Sensor boards}
 
 in its current state, the project has three sensor boards that can be installed
