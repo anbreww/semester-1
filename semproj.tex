@@ -125,6 +125,14 @@ Smart homes, energy monitoring and management, etc. Talk about it here or in
 Here, I talk about Thierry's project, and a few words about the other projects,
 and how they fit together as a system.
 
+Key points
+  - Have a global overview of who is using what when.
+  - Be able to take into account many things (movement, temperature in various
+  rooms, ambient light to adjust artificial lighting)
+  - Reduce power consumption globally by
+    + making people more aware of their energy consumption
+    + automating what can be automated
+
 \section{Overview}
 % todo : overview
 Describe how my system works, and why it's useful
@@ -141,6 +149,11 @@ used, as well as to explore some possibilities in the reduction of power usage.
 The wireless nodes that comprise the network must operate on a small power
 source for as long a time as possible.
 
+These were the main considerations when researching solutions for the various
+functional blocks of the project. When possible, I favoured ease of use and
+quick development over slight savings. Most of these could be made up for in a
+later stage, if required.
+
 \section{Solution}
 % todo : solutions, and find an english title
 List some options that were considered and discarded, and why.
@@ -154,6 +167,17 @@ Why NiMH? Why not LiPO? Why not use a DC-DC converter?
 Why ZigBee? Within ZigBee solutions, why XBees?
 Several wireless communication solutions were considered during the design
 phase. 
+
+% TODO : turn this into real text
+- make a table to compare wireless devices
+
+main advantages of XBee : 
+- my previous experience with them (no need to learn a
+  whole new protocol. Quite nice since I already have to do the hardware design
+  and learn a whole new microcontroller architecture)
+- No antenna circuitry to design
+- Easy to re-use in future projects (only need a specific footprint)
+- No proprietary stack -> can use any type of microcontroller
 
 \subsection{Microcontroller}
 Why go for an ATXMEGA?
