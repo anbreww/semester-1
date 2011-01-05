@@ -121,26 +121,64 @@
 \addcontentsline{toc}{section}{Introduction}
 \markboth{Introduction}{\MakeUppercase{Introduction}}
 % TODO : introduction
-This is the introduction for my semester project
+Smart energy management is one of the core applications of home automation. To
+this end, many systems have been developed, but not many are in widespread use.
+It is still an emerging business which can benefit from research, and is still
+being very actively developed at the moment.
 
-Smart homes, energy monitoring and management, etc. Talk about it here or in
-``context''?
+Here are some of the main features that a well integrated home automation system
+could provide:
+\begin{description}
+  \item[Consumption] : indicate where energy is being consumed and by whom, as
+    well as extract statistics, which can be linked to other factors, like for
+    instance thermostat settings, outdoor temperature, activity in the
+    home\ldots
+  \item[React] to the environment : turn lights and other appliances on and off
+    depending on activity and time of day. It would be interesting for example
+    to turn off lights when no human presence is detected, to use power-hungry
+    devices during the night to even out power usage, or to adjust the lighting
+    to suit the amount of natural light coming in a room. 
+\end{description}
+
+% todo : citation needed
+The benefits of such a system are twofold : first, it has been demonstrated
+\textbf{(citation needed)} that simply providing people with data about their
+energy consumption results in a substantial drop in power usage. It can also
+help to make statistics and comparisons between devices and households.
+
+Second, as described previously, it is possible to add a level of automation to
+the system. Actions such as adjusting the lighting based on incoming sunlight or
+the level of activity in a room for example are not common, but could lead to
+energy savings. These are both fairly straightforward to implement and could
+actually be implemented on the system developed in this semester project.
+
+Another interesting application is remote control : rather than leave heating
+and other things on all the time while away, it would be possible to turn them
+off just after leaving the house, and turn them on a short time before arriving.
+With most current-generation smartphones, it would even be possible to do all
+this automatically, based on the user's position as determined by the phone's
+internal GPS.
+
 
 \section{Context and previous work}
-% todo : context
-Here, I talk about Thierry's project, and a few words about the other projects,
-and how they fit together as a system.
+% TODO : context
+\textbf{Here : talk about previous projects, how they fit together}
 
-Key points
-  - Have a global overview of who is using what when.
-  - Be able to take into account many things (movement, temperature in various
-  rooms, ambient light to adjust artificial lighting)
-  - Reduce power consumption globally by
-    + making people more aware of their energy consumption
-    + automating what can be automated
+
+Several projects in the ELab have been focused around the idea of a Powerline
+network : modules that plug into a regular household socket and transmit data
+along the power lines. The first project by Thierry Barras \cite{barras2009} was
+to develop a set of modules that can communicate together on the power network.
+
+Later projects added a Wi-Fi interface, which allowed the nodes to be controlled
+by any internet-capable device, a GSM module, which can accept commands by text
+messages, and a touch-screen interface.
+
 
 \section{Overview}
 % todo : overview
+\textbf{Here : what's missing in the existing system, where my project fits in}
+
 Describe how my system works, and why it's useful
 This project aims to extend the Powerline network with the addition of wireless
 nodes. At the moment, the existing system can control appliances, measure power
@@ -168,12 +206,66 @@ List some options that were considered and discarded, and why.
 % todo : power supply
 Why NiMH? Why not LiPO? Why not use a DC-DC converter?
 
+
 \subsection{Wireless}
 % todo : wireless
-Why ZigBee? Within ZigBee solutions, why XBees?
-Several wireless communication solutions were considered during the design
-phase. 
+\subsection{Solutions Considered}
 
+Several wireless communication solutions were considered during the design
+phase. We will begin with a brief overview of the solutions that were considered
+for this application.
+
+\subsubsection{Microchip MRF24J40}
+
+Microchip\furl{http://www.microchip.com} offer a series of integrated solutions
+based on the 802.15.4\furl{http://en.wikipedia.org/wiki/IEEE_802.15.4-2006}
+hardware standard. They are quite affordable (\$10 for the short range version),
+but they require the installation of a wireless stack. The options provided by
+Microchip are either \emph{MiWi}, which is a royalty-free, lightweight, and free
+stack, or a full ZigBee stack.
+
+Although the MiWi stack seems to fit our application quite well, the fact that
+it is proprietary basically guarantees that we cannot ensure interoperability
+with devices from other vendors, as well as forcing us to use Microchip's
+platform for the foreseeable future. This is clearly not desirable as one of my
+main objectives for this project was to ensure that it is scalable and can be
+extended to other devices.
+
+The ZigBee stack is an interesting alternative, as it is theoretically
+compatible with any other ZigBee-certified device. It was discarded immediately
+however as the base cost to install and use the framework is way outside the
+scope of this project (over \$900 at the time of writing).
+
+\subsubsection{Nordic nRF24L01+}
+
+The nRF24 series by Nordic Semiconductor\furl{http://www.nordicsemi.com/} is a
+very interesting and cost-effective solution for small wireless networks. Their
+chips are quite inexpensive (approx. \unit[7]{Chf}) and they provide a hardware
+design which can be re-used with minimal work. Unfortunately, the system doesn't
+appear to scale very well, as one chip can only communicate with six different
+neighbours at a time. Beyond that, it requires some workarounds such as
+frequency hopping, which may be interesting but would require too much work for
+a project of this scope.
+
+\subsubsection{Other solutions}
+
+A few other solutions were considered, such as the CC2520 family by Texas
+Instruments\furl{http://ti.com}. This and many others were discarded because
+they require an antenna to be designed into the PCB. These solutions would be
+intresting from a cost perspective, as they are almost half as expensive as
+other ready-made solutions, but having to design the RF circuitry would greatly
+increase the potential for errors, and require too much design time. 
+
+Finally, it was decided that the solution should be based on the IEEE 802.15.4
+standard, provide easy interoperability between device and vendor types, and be
+easy to implement, to avoid ``reinventing the wheel'' in terms of radio
+transmissions.
+
+\subsubsection{Afterthoughts}
+% TODO : mention stuff that might be better after consideration, ie 6LowPAN
+
+
+\subsection{ZigBee : defining reasons}
 % TODO : turn this into real text
 - make a table to compare wireless devices
 
@@ -184,6 +276,30 @@ main advantages of XBee :
 - No antenna circuitry to design
 - Easy to re-use in future projects (only need a specific footprint)
 - No proprietary stack -> can use any type of microcontroller
+- Re-programmable wirelessly
+
+
+\subsection{Current implementation}
+For reference, the addresses of the five modules used in this project are listed
+in \TAB{tab:addresses}. These addresses may be used to communicate to a specific
+device if the short (16-bit) local address is not known. The addresses for known
+modules are already contained in the source code for quick re-use.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{l|l|l}
+    Address & Node ID & Type \\
+    \hline
+    0x13A2004064EFC2 & NODE0 & Coordinator \\
+    0x13A2004064EFCC & NODE1 & End device \\
+    0x13A2004064EFEB & NODE2 & End device \\
+    0x13A2004064EFC1 & NODE3 & End device \\
+    0x13A2004064EFF1 & NODE4 & Router \\
+    %\hline
+  \end{tabular}
+  \caption{Zigbee device address list}
+  \label{tab:addresses}
+\end{table}
 
 \subsection{Microcontroller}
 Why go for an ATXMEGA?
@@ -252,6 +368,8 @@ Go over hardware in blocks
 Explain the difference between receiver and emitters
 
 Show details of sensor expansion port
+
+% TODO : also mention USB debugger!!
 
 \subsection{Base board}
 
@@ -569,30 +687,102 @@ the radio transmitter modules, while keeping the same functionality and
 compatibility with the existing modules.
 
 \section{Design changes}
-% TODO : rewrite this
-Here I talk about stuff that has had to be changed between fabricated version
-and next version (already done or still to be done)
+\label{sec:design-changes}
 
-UART Interface : swap RXD and TXD (done on gateway module)
+As is often the case with a first prototype, some mistakes were made in the
+design of the first batch of PCBs. I will not list every single modification
+that has been made since the first version, but some of these bear mentioning,
+in case the files or PCBs are to be re-used in a future design.
 
-Ambient light sensor : change resistor
+\subsection{UART Interface}
+% TODO : check that it's been fixed
+On the current fabricated version of the modules, the RX and TX pins were
+inverted in the schematic. Obviously, the RX pin of the gateway should go to the
+TX pin of the powerline module and vice versa. On the current gateway, this has
+been corrected by cutting traces on the PCB. It has \emph{not} been done on the
+other modules. Please ensure that you cross those two traces if you wish to use
+any of the other modules to connect to a powerline module!
 
-Sensor I/O : note that connector pinout is not in the same order as the
-schematic
+In addition to this, the connector footprint is upside down. Since it is a
+side-facing connector, it is not possible to reverse it. Therefore, \emph{the
+cable used to connect the gateway to the powerline modules must be reversed}.
+This error has \emph{not been corrected} in the PCB files.
 
-JTAG interface : use a \unit[2.54]{mm} connector if possible, 1.27 does not seem
-very reliable for extended use. Also reconsider layout of connector vs XBee
-because of mechanical constraints
+\subsection{Ambient light sensor}
+The phototransistor used was chosen for its low current. However, it does not
+have a very wide dynamic range. The inline resistor may need to be changed to
+get better results, depending if the target application is to measure sunlight
+or ambient light in a room.
 
-JST Connector : holes are too small.
+\subsection{Sensor I/O}
+The sensor expansion port was originally designed as on the schematic drawing,
+to be reversible without causing any damage by shorting power pins to ground.
+Due to an unfortunate difference in numbering between the schematic and the PCB
+footprint, the pins do not appear to be in the same order as on the schematic.
+Therefore please refer to the PCB drawing for correct pin names and numbers, and
+take care when connecting an extension board not to reverse it.
+
+\subsection{JTAG connector}
+In order to save precious space on the circuit board, the original programming
+headers were replaced with a \unit[1.27]{mm} 2-row connector for JTAG debugging
+and programming. It is possible to connect any AVR compatible programmer using
+either the standard \unit[2.54]{mm} JTAG or PDI connectors, using the included
+adapters.
+
+After testing, it does appear that \unit[1.27]{mm} seem a lot less robust and
+less pleasant to use than the larger version. If space permits, I would
+recommend using a larger connecter on a possible future revision of the board.
+
+In addition to this, the connector is currently placed slightly too close to the
+wireless transmitter. It is therefore necessary to remove the transmitter to be
+able to connect or disconnect the JTAG adapter, which is obviously not very
+desirable.
+
+\subsection{JST Connector}
+The JST connector included on the board was not intended to be used in the scope
+of this project, and the interface has thus not been tested. On the current
+version, the holes in the PCB are slightly too small. The connector pins must
+therefore be filed off (with a Dremel tool for instance) before they will fit in
+the footprint. This error has been corrected in the latest version of the Altium
+files. % TODO : verify this
 
 \subsection{Add-on boards}
+Most features of the add-on boards have been tested and are functional, however
+a few issues remain.
 
-Capacitive humidity sensor: calculate proper resistor
+\subsubsection{Humidity Sensor}
+\label{sub2:humidity}
+As the design of the sensor boards occured fairly late in the project timeline,
+some features were not extensively tested due to lack of time. Specifically, the
+humidity sensor was not given much attention. The sensor was chosen for its very
+low price, but the downside of this is that it requires proper calibration, as
+the absolute humidity rating can vary by over \unit[40\%]{RH} (on a scale of
+zero to \unit[100\%]{RH}, obviously). The sensor is rather useless without a
+proper calibration process, which requires either an environment with controlled
+humidity, or a well-calibrated reference sensor. At the time of writing, it has
+not yet been tested, and therefore the charging resistor may need to be
+recalculated and modified.
+
+% Barometer
+\subsubsection{Barometer}
+\label{sub2:barometer}
+The barometer chip on the environmental sensor board has been implemented and
+successfully tested. Raw ADC readings for pressure and temperature can be made,
+as well as loading of the calibration coefficients. An attempt was made
+at porting the example code from the Freescale application note[citation
+needed].
+%todo : citation needed
+It seems however that the results are not quite accurate. It was deemed
+therefore that the time needed to debug this would be better spent elsewhere, as
+some other areas are in need of more attention.
 
 
 \section{Test results}
 
+\bibliographystyle{ieeetr}
+\bibliography{biblio-semproj}
+
+\pagebreak
 \appendix
 
 \section{Schematics}
@@ -706,9 +896,6 @@ libraries by Atmel are available %TODO : here
 \pagebreak
 %%%%%%%%%%
 
-
-\bibliographystyle{ieeetr}
-\bibliography{biblio-semproj}
 
 \end{document}
 
