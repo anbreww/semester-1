@@ -11,7 +11,7 @@ pdfquiet:
 	pdflatex $(TEXSOURCE) && pdflatex $(TEXSOURCE)
 
 bib:
-	pdflatex $(TEXSOURCE) && pdflatex $(TEXSOURCE) && bibtex $(BASE_NAME) && pdflatex $(TEXSOURCE) && evince $(OUTPUT)
+	pdflatex $(TEXSOURCE) && pdflatex $(TEXSOURCE) && bibtex $(BASE_NAME) && pdflatex $(TEXSOURCE)
 
 todo:
 	grep -i -n --colour todo *.tex 
