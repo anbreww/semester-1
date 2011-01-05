@@ -27,7 +27,7 @@
     \HRule \\[0.7cm]
     { \huge \bfseries Smart home wireless sensing}\\[0.4cm]
 
-    \includegraphics[width=0.6\textwidth]{title_pic} 
+    \includegraphics[width=0.6\textwidth]{sideview} 
      
     \HRule \\[2.0cm]
      
@@ -86,6 +86,7 @@
 %% see http://www.jorgemarsal.com/blog/2009/06/08/source-code-snippets-in-latex/
 \lstset{language=C}
 %\definecolor{lightgrey}{RGB}{200,200,200}
+\definecolor{grey97}{gray}{0.97}
 \definecolor{grey92}{gray}{0.92}
 \definecolor{grey75}{gray}{0.75}
 \definecolor{grey45}{gray}{0.45}
@@ -97,8 +98,9 @@
 \lstdefinestyle{console}
 {
   numbers=none,
-  basicstyle=\bf\ttfamily,
-  backgroundcolor=\color{grey92},
+  %basicstyle=\bf\ttfamily,
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{grey97},
   frame=lrtb,
   framerule=0.5pt,
   linewidth=\textwidth,
@@ -201,12 +203,47 @@ continuously, the network will function in a star topology.
 
 In this configuration, the gateway device is powered from the grid, and the
 wireless sensor nodes wake up at a given interval and transmit their data to the
-gateway. The sensors manage their sleep themselves, and it is not necessary to
-send them commands. This option has been disabled to save power, but it would be
-possible to wake a module up periodically and listen for incoming transmissions.
+gateway. The nodes do not require any incoming transmissions as they are
+configured to transmit regularly. This is the most efficient way of saving
+power, but it does limit functionality to a certain extent.
 
-In this setup, the router and coordinator automatically buffer packets until the
-destination node wakes up.
+If future applications require it though, it is possible to configure Zigbee end
+nodes to wake up regularly and listen for incoming transmissions. If an end node
+is asleep when a packet is sent to it, it will be buffered by the nearest router
+or coordinator until the node wakes up. It is best to avoid this mode though,
+since it reduces battery life, and causes an inherent delayed reaction time.
+
+\Fig{fig:topology-flows} illustrates the topology chosen for the demonstration
+which will be presented at the end of this project, and shows which way
+information flows. 
+
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=1.0\textwidth]{flowcharts/topology-flows}
+  \end{center}
+  \caption{Topology chart illustrating information flows}
+  \label{fig:topology-flows}
+\end{figure}
+
+This scenario demonstrates a simple network of four nodes. At the center of it,
+the Gateway acts as a coordinator, and can receive transmissions from any other
+node. Any node which wishes to join the network must connect to the coordinator
+and is attributed a 16-bit local address. The network uses a local identifier to
+regroup all the nodes, which is reffered to as a PAN ID. The coordinator is
+configured to use PAN ID \bash{0x1984}.
+
+Two nodes react to user interaction, and send commands either to dim a lamp or
+to turn it on when it detects movement. These commands are sent to the gateway
+and forwarded to the powerline network.
+
+A third node takes periodic measurements of its sensor values, but rather than
+sending them through the powerline network, they are sent directly to a receiver
+connected to a computer by USB. From there, the data can be logged and graphed
+from a MATLAB or Python script on the host computer. Additionally, it would be
+possible to act on the data and send commands to the powerline network from the
+computer, wirelessly. This however is not implemented in the current demo.
+
 
 \section{Hardware design}
 
@@ -346,6 +383,32 @@ This is sufficient however for most basic applications. If more space is needed,
 it is assumed that the designer will route the necessary connections on the
 add-on board, then connect any other sensors off-board using connector cables.
 
+
+\subsection{Gateway device}
+
+Each network is normally comprised of one gateway device. This device uses the
+same basic hardware as the sensor node, although it requires less components.
+
+% TODO : insert picture of gateway node
+
+Its sole purpose is to forward incoming wireless transmissions onto the
+Powerline network to control the Powerline devices. In its current
+implementation, it simply parses the ZigBee packets, strips them of all the
+additional information (headers, checksums, addressing etc.) and then forwards
+the data onto the Powerline nodes.
+
+On one hand, this means that the nodes are free to send any data they wish,
+since it does not have to be interpreted by the gateway, but at the same time,
+the commands for the powerline network must be embedded into the end nodes. The
+main advantage of this situation is that if some functionality is added to a
+powerline module, and a wireless node is added to complement it, there is no
+need to reprogram the gateway to take these new features into account.
+
+Since the gateway device is destined to be plugged in to a wall socket, it will
+always be active and listening for transmissions. It functions as the network
+coordinator. Therefore, any packets which must be transmitted to the Powerline
+network are to be addressed to the ZigBee coordinator, whose 64-bit address is :
+\bash{00:00:00:00:00:00:00:00}.
 
 \subsubsection{Motion sensor}
 
@@ -527,32 +590,125 @@ JST Connector : holes are too small.
 
 Capacitive humidity sensor: calculate proper resistor
 
+
 \section{Test results}
 
-\section{Some examples of code}
-\begin{lstlisting}[language=C]
-  #define F_CPU 8000000UL
-  #define Blah() do_nothing();
+\appendix
 
-  #include <avr/io.h>
-  #include "stuff.h"
-  int main(void)
-  {
-    char blue = 0;
-    int i = 0;
+\section{Schematics}
 
-    for(i=0; i<10; i++)
-    {
-      // do stuff
-      foo();
-      bar();
-    }
-    code_example();
-  }
-\end{lstlisting}
+\section{Microcontroller software}
+The following section contains the source code for the nodes. The XMEGA
+libraries by Atmel are available %TODO : here
 
-There's also a way of including \code{code} inline.
+% TODO : link to github repo
 
+
+\subsection{Project Libraries}
+\label{an:project-libs}
+
+\subsubsection{XBee code}
+\bash{xbee.h}
+\lstinputlisting[language=C]{../code/project_libs/xbee.h}
+\bash{xbee.c}
+\lstinputlisting[language=C]{../code/project_libs/xbee.c}
+
+\subsubsection{Hardware definitions}
+\bash{hardware.h}
+\lstinputlisting[language=C]{../code/project_libs/hardware.h}
+
+\subsubsection{Debug functions}
+\bash{debug.h}
+\lstinputlisting[language=C]{../code/project_libs/debug.h}
+\bash{debug.c}
+\lstinputlisting[language=C]{../code/project_libs/debug.c}
+
+\subsubsection{Powerline interface}
+\bash{powerline.h}
+\lstinputlisting[language=C]{../code/project_libs/powerline.h}
+\bash{powerline.c}
+\lstinputlisting[language=C]{../code/project_libs/powerline.c}
+
+\subsubsection{Built-in sensors}
+\bash{builtin\_sensors.h}
+\lstinputlisting[language=C]{../code/project_libs/builtin_sensors.h}
+\bash{builtin\_sensors.c}
+\lstinputlisting[language=C]{../code/project_libs/builtin_sensors.c}
+
+%%%%%%%%%%
+\pagebreak
+%%%%%%%%%%
+
+
+\subsection{Motion Sensor Node}
+\label{an:motion-code}
+
+\subsubsection{Motion sense library}
+\bash{board\_motion.h}
+\lstinputlisting[language=C]{../code/project_libs/board_motion.h}
+\bash{board\_motion.c}
+\lstinputlisting[language=C]{../code/project_libs/board_motion.c}
+
+\subsubsection{Motion sense main file}
+% todo : replace initial_tests with motion-board
+\bash{main.c}
+\lstinputlisting[language=C]{../code/initial_tests/main.c}
+
+%%%%%%%%%%
+\pagebreak
+%%%%%%%%%%
+
+\subsection{Dimmer Node}
+\label{an:dimmer-code}
+
+\subsubsection{Dimmer library}
+\bash{board\_dimmer.h}
+\lstinputlisting[language=C]{../code/project_libs/board_dimmer.h}
+\bash{board\_dimmer.c}
+\lstinputlisting[language=C]{../code/project_libs/board_dimmer.c}
+
+\subsubsection{Dimmer main file}
+% todo : replace initial_tests with dimmer-board
+\bash{main.c}
+\lstinputlisting[language=C]{../code/initial_tests/main.c}
+
+%%%%%%%%%%
+\pagebreak
+%%%%%%%%%%
+
+\subsection{Environment Sensing Node}
+\label{an:environment-code}
+
+\subsubsection{Environment sense library}
+\bash{board\_sensors.h}
+\lstinputlisting[language=C]{../code/project_libs/board_sensors.h}
+\bash{board\_sensors.c}
+\lstinputlisting[language=C]{../code/project_libs/board_sensors.c}
+
+\subsubsection{Environment sense main file}
+% todo : replace initial_tests with sensors-board
+\bash{main.c}
+\lstinputlisting[language=C]{../code/initial_tests/main.c}
+
+%%%%%%%%%%
+\pagebreak
+%%%%%%%%%%
+
+\subsection{ZigBee to Powerline Gateway}
+\label{an:gateway-code}
+
+\subsubsection{Environment sense main file}
+% todo : replace initial_tests with gateway
+\bash{gateway.c}
+\lstinputlisting[language=C]{../code/gateway/gateway.c}
+
+%%%%%%%%%%
+\pagebreak
+%%%%%%%%%%
+
+
+\bibliographystyle{ieeetr}
+\bibliography{biblio-semproj}
 
 \end{document}
 
