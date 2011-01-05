@@ -6,6 +6,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \input{includes/preamble}
+% duplicating graphicx here because of vim-latex autodetect
+\usepackage[pdftex]{graphicx} 
 \begin{document}
 \begin{titlepage}
 \nocite{*}      % to make sure bibliography appears in the correct order
@@ -158,8 +160,8 @@ later stage, if required.
 % todo : solutions, and find an english title
 List some options that were considered and discarded, and why.
 
-% todo : power supply
 \subsection{Power supply}
+% todo : power supply
 Why NiMH? Why not LiPO? Why not use a DC-DC converter?
 
 \subsection{Wireless}
@@ -186,6 +188,7 @@ Don't forget to mention : in the hardware design, only I/Os that are also
 available on the 44 pin version were used. Also, because of the good modularity
 of the XMEGA family, the code can be ported without any changes from one device
 to another.
+
 
 \section{Network topology}
 
@@ -243,9 +246,18 @@ code were designed with a 44 pin microcontroller in mind, and it would be
 trivial to adapt the design to the smaller version to reduce cost, and use less
 space on the board.
 
+\begin{figure}[htpb]
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{blocks/wm_microcontroller}
+  \end{center}
+  \caption{ATXMEGA Microcontroller}
+  \label{fig:microcontroller}
+\end{figure}
+
 
 \subsubsection{Power supply}
 % TODO : insert picture of power supply design
+
 The nodes can have various power sources. They were designed to function on two
 AA batteries, which provide voltages between 2 and \unit[3.2]{V}. All components on
 the board were chosen to operate in this voltage range.
@@ -258,6 +270,14 @@ external charger (or solar power module). The power lines can be disconnected by
 the main controller, and two communication lines are available for information
 exchange between the sensor node and its power source. These lines are connected
 to the ATXMEGA's USART lines in case serial communication is desired.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=0.8\textwidth]{blocks/wm_solar_charging}
+  \end{center}
+  \caption{External charger connection}
+  \label{fig:solar-charger}
+\end{figure}
 
 In addition to this, the input voltage can be measured with a voltage divider,
 and disconnected if it is not needed. The ATXMEGA has a built-in module for
@@ -294,7 +314,14 @@ expansion port, is was designed to provide any functionality that one may
 require. The expansion port uses a two-way, 20-pin connector with a \unit[2]{mm}
 pitch.
 
-% TODO : insert expansion port schematic
+\begin{figure}[hp]
+  \begin{center}
+    \includegraphics[width=0.7\textwidth]{blocks/wm_sensor_io}
+  \end{center}
+  \caption{Sensor expansion port}
+  \label{fig:sensor-io}
+\end{figure}
+
 As can be seen on the schematic, the expansion port provides the following
 connectivity:
 \begin{description}
@@ -336,7 +363,14 @@ from one wireless node.
 
 % TODO : check name of regulator, add part number
 
-% TODO : insert motion sensor schematic
+% TODO : mention which annex contains motion sensor schematic
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=1\textwidth]{flowcharts/motion-flowchart-colour}
+  \end{center}
+  \caption{Motion sensor node operation}
+  \label{fig:motion-flowchart}
+\end{figure}
 
 Although they require very little power to function, the PIR modules need a
 permanent supply voltage in order to function. Therefore, the power supply must
@@ -384,6 +418,14 @@ since the nodes are eventually meant to reside in cases, the buttons and
 potentiometers are to be fixed to the enclosure and connected to the add-on
 board using cables. This allows a little flexibility in the physical design of
 the nodes.
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=1\textwidth]{flowcharts/dimmer-flowchart-colour}
+  \end{center}
+  \caption{Dimmer node operation}
+  \label{fig:dimmer-flowchart}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % TODO : sampling the potentiometer
