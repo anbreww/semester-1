@@ -15,8 +15,8 @@
   {\chaptertitlename\ \thechapter}{20pt}{\Huge}
 
 % first colour for latex or pdflatex
-\ifx\pdfoutput\@undefined\usepackage[usenames,dvips]{color}
-\else\usepackage[usenames,dvipsnames]{color}
+\ifx\pdfoutput\@undefined\usepackage[usenames,dvips]{xcolor}
+\else\usepackage[usenames,dvipsnames]{xcolor}
 % and fix pdf colour problems
 \IfFileExists{pdfcolmk.sty}{\usepackage{pdfcolmk}}{}
 \fi
@@ -144,23 +144,23 @@
 
 % new abbreviations
 % definitions for Figure-References
-\newcommand{\fig}[1]{(Fig. \ref{#1})}
-\newcommand{\FIG}[1]{fig. \ref{#1}}
-\newcommand{\Fig}[1]{Fig. \ref{#1}}
+\newcommand{\fig}[1]{(Fig.~\ref{#1})}
+\newcommand{\FIG}[1]{fig.~\ref{#1}}
+\newcommand{\Fig}[1]{Fig.~\ref{#1}}
 
 % definitions for Table-References
-\newcommand{\tab}[1]{(table \ref{#1})}
-\newcommand{\TAB}[1]{table \ref{#1}}
-\newcommand{\Tab}[1]{Table \ref{#1}}
+\newcommand{\tab}[1]{(table~\ref{#1})}
+\newcommand{\TAB}[1]{table~\ref{#1}}
+\newcommand{\Tab}[1]{Table~\ref{#1}}
 
 % definitions for Page-References
-\newcommand{\page}[1]{(page \pageref{#1})}
-\newcommand{\PAGE}[1]{page \pageref{#1}}
+\newcommand{\page}[1]{(page~\pageref{#1})}
+\newcommand{\PAGE}[1]{page~\pageref{#1}}
 
 % definitions for Equation-References
-\newcommand{\eq}[1]{(eq. \ref{#1})}
-\newcommand{\EQ}[1]{eq. \ref{#1}}
-\newcommand{\Eq}[1]{Eq. \ref{#1}}
+\newcommand{\eq}[1]{(eq.~\ref{#1})}
+\newcommand{\EQ}[1]{eq.~\ref{#1}}
+\newcommand{\Eq}[1]{Eq.~\ref{#1}}
 
 % definitions for Code
 \newcommand{\precode}[1]{\textbf{\footnotesize #1}}
