@@ -92,6 +92,8 @@
 
 % todo : add macros for ATXMEGA, AVR?
 
+% TODO : add references in bib for application notes, esp AVR1010
+
 \lstdefinestyle{console}
 {
   numbers=none,
@@ -502,6 +504,28 @@ seemingly ``plug-and-play'' functionality. If more time could be spend on the
 development, it would be reasonable to expect to spend up to three times less on
 the radio transmitter modules, while keeping the same functionality and
 compatibility with the existing modules.
+
+\section{Design changes}
+% TODO : rewrite this
+Here I talk about stuff that has had to be changed between fabricated version
+and next version (already done or still to be done)
+
+UART Interface : swap RXD and TXD (done on gateway module)
+
+Ambient light sensor : change resistor
+
+Sensor I/O : note that connector pinout is not in the same order as the
+schematic
+
+JTAG interface : use a \unit[2.54]{mm} connector if possible, 1.27 does not seem
+very reliable for extended use. Also reconsider layout of connector vs XBee
+because of mechanical constraints
+
+JST Connector : holes are too small.
+
+\subsection{Add-on boards}
+
+Capacitive humidity sensor: calculate proper resistor
 
 \section{Test results}
 
