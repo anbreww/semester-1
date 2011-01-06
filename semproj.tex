@@ -35,7 +35,7 @@
     \begin{minipage}{0.4\textwidth}
       \begin{flushleft} \large
         \emph{Author:} \\
-        Andrew \textsc{Watson}\\[0.8cm]
+        Andrew \textsc{Watson}\\[1.0cm]
 
         Microengineering\\
         Master - Semester 1\\[0.5cm]
@@ -75,6 +75,7 @@
 %\begin{abstract}
 %\end{abstract}
 
+\setcounter{secnumdepth}{5}
 
 %\renewcommand\contentsname{Plan}  % Rename ``Table des Matières''
 \tableofcontents{}
@@ -160,6 +161,7 @@ this automatically, based on the user's position as determined by the phone's
 internal GPS.
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Context and previous work}
 % TODO : context
 \textbf{Here : talk about previous projects, how they fit together}
@@ -175,6 +177,7 @@ by any internet-capable device, a GSM module, which can accept commands by text
 messages, and a touch-screen interface.
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Overview}
 % todo : overview
 \textbf{Here : what's missing in the existing system, where my project fits in}
@@ -198,23 +201,26 @@ functional blocks of the project. When possible, I favoured ease of use and
 quick development over slight savings. Most of these could be made up for in a
 later stage, if required.
 
-\section{Solution}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Solutions}
 % todo : solutions, and find an english title
 List some options that were considered and discarded, and why.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Power supply}
 % todo : power supply
 Why NiMH? Why not LiPO? Why not use a DC-DC converter?
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Wireless}
-% todo : wireless
-\subsection{Solutions Considered}
 
 Several wireless communication solutions were considered during the design
 phase. We will begin with a brief overview of the solutions that were considered
 for this application.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Microchip MRF24J40}
 
 Microchip\furl{http://www.microchip.com} offer a series of integrated solutions
@@ -236,6 +242,7 @@ compatible with any other ZigBee-certified device. It was discarded immediately
 however as the base cost to install and use the framework is way outside the
 scope of this project (over \$900 at the time of writing).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Nordic nRF24L01+}
 
 The nRF24 series by Nordic Semiconductor\furl{http://www.nordicsemi.com/} is a
@@ -247,6 +254,7 @@ neighbours at a time. Beyond that, it requires some workarounds such as
 frequency hopping, which may be interesting but would require too much work for
 a project of this scope.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Other solutions}
 
 A few other solutions were considered, such as the CC2520 family by Texas
@@ -261,24 +269,36 @@ standard, provide easy interoperability between device and vendor types, and be
 easy to implement, to avoid ``reinventing the wheel'' in terms of radio
 transmissions.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{ZigBee : defining reasons}
+% TODO : turn this into real text
+
+For most of the reasons mentioned above, the solution which was chosen for this
+design were a set of XBee transmitters from Digi
+International\furl{http://digi.com}. These modules are (in theory) very easy to
+set up and get operational in a short time, and ensured that not too much time
+would be wasted on the wireless transmission part of the project.
+
+\textbf{say a few words about ZigBee, interoperability, application profiles
+etc}
+
+In addition, they are supposedly fully compliant with the
+ZigBee\furl{http://zigbee.org} specification, which should allow the project to
+be extended with devices from other vendors without having to replace the
+existing hardware. The device footprint is easy to re-use in future projects
+(simply place two \unit[2]{mm} headers with decoupling capacitors), without any
+need for external antenna circuitry. It is also worth noting that these devices
+can be reprogrammed and reconfigured wirelessly, from a program running on a PC.
+
+Finally, I already had some personal experience with these devices, which would
+give me a little head start in understanding how packets are assembled and
+transmitted.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Afterthoughts}
 % TODO : mention stuff that might be better after consideration, ie 6LowPAN
 
-
-\subsection{ZigBee : defining reasons}
-% TODO : turn this into real text
-- make a table to compare wireless devices
-
-main advantages of XBee : 
-- my previous experience with them (no need to learn a
-  whole new protocol. Quite nice since I already have to do the hardware design
-  and learn a whole new microcontroller architecture)
-- No antenna circuitry to design
-- Easy to re-use in future projects (only need a specific footprint)
-- No proprietary stack -> can use any type of microcontroller
-- Re-programmable wirelessly
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Current implementation}
 For reference, the addresses of the five modules used in this project are listed
 in \TAB{tab:addresses}. These addresses may be used to communicate to a specific
@@ -301,6 +321,7 @@ modules are already contained in the source code for quick re-use.
   \label{tab:addresses}
 \end{table}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Microcontroller}
 Why go for an ATXMEGA?
 Explain the reason for getting a 64-pin instead of the cheaper XMEGAxxA4.
@@ -310,6 +331,7 @@ of the XMEGA family, the code can be ported without any changes from one device
 to another.
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Network topology}
 
 Zigbee is designed to work well in a mesh configuration. However, this requires
@@ -361,6 +383,7 @@ possible to act on the data and send commands to the powerline network from the
 computer, wirelessly. This however is not implemented in the current demo.
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Hardware design}
 
 Go over hardware in blocks
@@ -371,12 +394,14 @@ Show details of sensor expansion port
 
 % TODO : also mention USB debugger!!
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Base board}
 
 Each sensor node consists of a basic board and a sensor add-on. The basic board
 provides standard features common to all the nodes, such as network
 connectivity, power management, and processing.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Overview}
 
 The main board is made up of several elements. At its core is an ATXMEGA. This
@@ -395,6 +420,7 @@ Power is supplied mainly by batteries which are placed directly on the board,
 and can be recharged from an external interface. A power switch can be toggled
 by the user to turn the node on and off.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Microcontroller}
 
 The current version of the board uses a 64-pin microcontroller, because it
@@ -412,6 +438,7 @@ space on the board.
 \end{figure}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Power supply}
 % TODO : insert picture of power supply design
 
@@ -441,6 +468,7 @@ and disconnected if it is not needed. The ATXMEGA has a built-in module for
 measuring its own supply voltage, using a 10x voltage divider with a \unit[1]{V}
 reference.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Debug}
 
 The nodes were designed to function the same way if the microcontroller was
@@ -448,6 +476,7 @@ replaced by a 44-pin version. This leaves one port unused on the ATMEGA64A3,
 which was thus used as a debug port. Five pins are available on the right side
 of the device to display status on an LED or to send debug data through USARTF0.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Discarded features}
 
 Several features originally included in the design or enumerated during the
@@ -456,6 +485,7 @@ reasons behind these choices.
 
 % TODO : discuss board layout?
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Sensor boards}
 
 The main feature of the base board is its ``expansion port''. In order for the
@@ -502,6 +532,7 @@ it is assumed that the designer will route the necessary connections on the
 add-on board, then connect any other sensors off-board using connector cables.
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Gateway device}
 
 Each network is normally comprised of one gateway device. This device uses the
@@ -528,6 +559,7 @@ coordinator. Therefore, any packets which must be transmitted to the Powerline
 network are to be addressed to the ZigBee coordinator, whose 64-bit address is :
 \bash{00:00:00:00:00:00:00:00}.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Motion sensor}
 
 % TODO : detect movement, low consumption but must be constantly powered (use
@@ -571,6 +603,7 @@ seconds, the light is turned off again.
 
 % TODO : link to website and note article numbers.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Environmental sensors}
 
 The environment sensing board is comprised of three sensors:
@@ -588,6 +621,7 @@ easy communication (both use the I$^{2}$C bus on the expansion port).
 The capacitive humidity sensor was chosen for it's price, but as a consequence,
 it is very inaccurate and requires calibration.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Light controller}
 
 The final module is intended to control lights. It include connections for two
@@ -619,6 +653,7 @@ the nodes.
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Software considerations}
 
 As all the nodes (gateway and end devices) share the same hardware platform, it
@@ -661,8 +696,10 @@ sensing node, \bash{dimmer\_board} contains the code for a dimmer node, and so
 on. Usually, the \bash{main.c} file is the only file that differs between the
 various nodes.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Low-power design}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Cost considerations}
 
 For the sake of ease of development, some sacrifices were made in the area of
@@ -686,6 +723,7 @@ development, it would be reasonable to expect to spend up to three times less on
 the radio transmitter modules, while keeping the same functionality and
 compatibility with the existing modules.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Design changes}
 \label{sec:design-changes}
 
@@ -694,6 +732,7 @@ design of the first batch of PCBs. I will not list every single modification
 that has been made since the first version, but some of these bear mentioning,
 in case the files or PCBs are to be re-used in a future design.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{UART Interface}
 % TODO : check that it's been fixed
 On the current fabricated version of the modules, the RX and TX pins were
@@ -708,12 +747,14 @@ side-facing connector, it is not possible to reverse it. Therefore, \emph{the
 cable used to connect the gateway to the powerline modules must be reversed}.
 This error has \emph{not been corrected} in the PCB files.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Ambient light sensor}
 The phototransistor used was chosen for its low current. However, it does not
 have a very wide dynamic range. The inline resistor may need to be changed to
 get better results, depending if the target application is to measure sunlight
 or ambient light in a room.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Sensor I/O}
 The sensor expansion port was originally designed as on the schematic drawing,
 to be reversible without causing any damage by shorting power pins to ground.
@@ -722,6 +763,7 @@ footprint, the pins do not appear to be in the same order as on the schematic.
 Therefore please refer to the PCB drawing for correct pin names and numbers, and
 take care when connecting an extension board not to reverse it.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{JTAG connector}
 In order to save precious space on the circuit board, the original programming
 headers were replaced with a \unit[1.27]{mm} 2-row connector for JTAG debugging
@@ -738,6 +780,7 @@ wireless transmitter. It is therefore necessary to remove the transmitter to be
 able to connect or disconnect the JTAG adapter, which is obviously not very
 desirable.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{JST Connector}
 The JST connector included on the board was not intended to be used in the scope
 of this project, and the interface has thus not been tested. On the current
@@ -746,10 +789,12 @@ therefore be filed off (with a Dremel tool for instance) before they will fit in
 the footprint. This error has been corrected in the latest version of the Altium
 files. % TODO : verify this
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Add-on boards}
 Most features of the add-on boards have been tested and are functional, however
 a few issues remain.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Humidity Sensor}
 \label{sub2:humidity}
 As the design of the sensor boards occured fairly late in the project timeline,
@@ -764,6 +809,7 @@ not yet been tested, and therefore the charging resistor may need to be
 recalculated and modified.
 
 % Barometer
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Barometer}
 \label{sub2:barometer}
 The barometer chip on the environmental sensor board has been implemented and
@@ -777,6 +823,7 @@ therefore that the time needed to debug this would be better spent elsewhere, as
 some other areas are in need of more attention.
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Test results}
 
 \bibliographystyle{ieeetr}
@@ -785,8 +832,10 @@ some other areas are in need of more attention.
 \pagebreak
 \appendix
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Schematics}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Microcontroller software}
 The following section contains the source code for the nodes. The XMEGA
 libraries by Atmel are available %TODO : here
@@ -794,31 +843,37 @@ libraries by Atmel are available %TODO : here
 % TODO : link to github repo
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Project Libraries}
 \label{an:project-libs}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{XBee code}
 \bash{xbee.h}
 \lstinputlisting[language=C]{../code/project_libs/xbee.h}
 \bash{xbee.c}
 \lstinputlisting[language=C]{../code/project_libs/xbee.c}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Hardware definitions}
 \bash{hardware.h}
 \lstinputlisting[language=C]{../code/project_libs/hardware.h}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Debug functions}
 \bash{debug.h}
 \lstinputlisting[language=C]{../code/project_libs/debug.h}
 \bash{debug.c}
 \lstinputlisting[language=C]{../code/project_libs/debug.c}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Powerline interface}
 \bash{powerline.h}
 \lstinputlisting[language=C]{../code/project_libs/powerline.h}
 \bash{powerline.c}
 \lstinputlisting[language=C]{../code/project_libs/powerline.c}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Built-in sensors}
 \bash{builtin\_sensors.h}
 \lstinputlisting[language=C]{../code/project_libs/builtin_sensors.h}
@@ -830,65 +885,72 @@ libraries by Atmel are available %TODO : here
 %%%%%%%%%%
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Motion Sensor Node}
 \label{an:motion-code}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Motion sense library}
 \bash{board\_motion.h}
 \lstinputlisting[language=C]{../code/project_libs/board_motion.h}
 \bash{board\_motion.c}
 \lstinputlisting[language=C]{../code/project_libs/board_motion.c}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Motion sense main file}
-% todo : replace initial_tests with motion-board
 \bash{main.c}
-\lstinputlisting[language=C]{../code/initial_tests/main.c}
+\lstinputlisting[language=C]{../code/node-motion/main.c}
 
 %%%%%%%%%%
 \pagebreak
 %%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Dimmer Node}
 \label{an:dimmer-code}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Dimmer library}
 \bash{board\_dimmer.h}
 \lstinputlisting[language=C]{../code/project_libs/board_dimmer.h}
 \bash{board\_dimmer.c}
 \lstinputlisting[language=C]{../code/project_libs/board_dimmer.c}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Dimmer main file}
-% todo : replace initial_tests with dimmer-board
 \bash{main.c}
-\lstinputlisting[language=C]{../code/initial_tests/main.c}
+\lstinputlisting[language=C]{../code/node-dimmer/main.c}
 
 %%%%%%%%%%
 \pagebreak
 %%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Environment Sensing Node}
 \label{an:environment-code}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Environment sense library}
 \bash{board\_sensors.h}
 \lstinputlisting[language=C]{../code/project_libs/board_sensors.h}
 \bash{board\_sensors.c}
 \lstinputlisting[language=C]{../code/project_libs/board_sensors.c}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Environment sense main file}
-% todo : replace initial_tests with sensors-board
 \bash{main.c}
-\lstinputlisting[language=C]{../code/initial_tests/main.c}
+\lstinputlisting[language=C]{../code/node-sensors/main.c}
 
 %%%%%%%%%%
 \pagebreak
 %%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{ZigBee to Powerline Gateway}
 \label{an:gateway-code}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Environment sense main file}
-% todo : replace initial_tests with gateway
 \bash{gateway.c}
 \lstinputlisting[language=C]{../code/gateway/gateway.c}
 
