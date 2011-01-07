@@ -7,6 +7,7 @@
 
 \input{includes/preamble}
 % duplicating graphicx here because of vim-latex autodetect
+\newcommand{\thedate}{January 8, 2010}
 \usepackage[pdftex]{graphicx} 
 \usepackage{pdfpages}
 \begin{document}
@@ -56,7 +57,7 @@
     \vfill
      
     % Bottom of the page
-    {\large \today}
+    {\large \thedate}
      
   \end{center}
 
@@ -70,8 +71,8 @@
 \lhead{}
 \cfoot{\thepage}        % numéro de page..
 \lfoot{Semester Project}
-%\rfoot{\today}
-\rfoot{\today} %% TODO : fix the date
+%\rfoot{\thedate}
+\rfoot{\thedate} 
 
 %\begin{abstract}
 %\end{abstract}
@@ -122,7 +123,6 @@
 \section*{Introduction}
 \addcontentsline{toc}{section}{Introduction}
 \markboth{Introduction}{\MakeUppercase{Introduction}}
-% TODO : introduction
 Smart energy management is one of the core applications of home automation. To
 this end, many systems have been developed, but not many are in widespread use.
 It is still an emerging business which can benefit from research, and is still
@@ -142,12 +142,8 @@ could provide:
     to suit the amount of natural light coming in a room. 
 \end{description}
 
-% todo : cite some numbers in objectives (like power consumption or how long it
-% should last)
-
-% todo : citation needed
-The benefits of such a system are twofold : first, it has been demonstrated
-\textbf{(citation needed)} that simply providing people with data about their
+The benefits of such a system are twofold : first, it has been
+demonstrated\cite{darby2006} that simply providing people with data about their
 energy consumption results in a substantial drop in power usage. It can also
 help to make statistics and comparisons between devices and households.
 
@@ -167,24 +163,28 @@ internal GPS.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Context and previous work}
-% TODO : context
-\textbf{Here : talk about previous projects, how they fit together}
-
 
 Several projects in the ELab have been focused around the idea of a Powerline
 network : modules that plug into a regular household socket and transmit data
-along the power lines. The first project by Thierry Barras \cite{barras2009} was
+along the power lines. The first project by Thierry Barras\cite{barras2009} was
 to develop a set of modules that can communicate together on the power network.
 
-Later projects added a Wi-Fi interface, which allowed the nodes to be controlled
-by any internet-capable device, a GSM module, which can accept commands by text
-messages, and a touch-screen interface.
+Later projects added a Wi-Fi interface\cite{sallin2010}, which allowed the nodes
+to be controlled by any internet-capable device, a GSM module\cite{sallin2010},
+which can accept commands by text messages, and a touch-screen interface.
 
+These are some building blocks that could lead to a complete home automation
+solution, allowing to control many aspects of day-to-day life automatically,
+including electric blinds, appliances, security devices and home entertainment.
+One key area that is currently missing from these projects though is the ability
+to interact with users and sensors in areas devoid of electrical power.
+
+If a user wishes to add a light switch on a wall, measure the outdoor
+temperature, or place motion detectors without pulling long and ugly extension
+cords, that is not currently possible with the existing modules.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Overview}
-% todo : overview
-\textbf{Here : what's missing in the existing system, where my project fits in}
 
 This project aims to extend the Powerline network with the addition of wireless
 nodes. At the moment, the existing system can control appliances, measure power
@@ -217,20 +217,125 @@ to be extended in the future, it would be interesting to add functionality to
 reconfigure the wireless nodes at runtime, to select different targets to
 control.
 
+\subsection{Power requirements}
+Most of these modules will be running of their own limited power source. It is
+thus essential that the power consumption be as low as possible. Low power usage
+must be the main driving force behind all design decisions, so as to maximise
+the autonomy of the wireless nodes. 
+As a reference, we would like the nodes to be able to run for several months
+without needing to be recharged. In the event that the power runs out, it must
+be easy to identify which nodes have run out of power, and they must be easy to
+recharge. 
+All these points have been accounted for in the hardware design, but most of
+them have not yet been implemented in software. 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Solutions}
-% todo : solutions, and find an english title
-List some options that were considered and discarded, and why.
+In light of these requirements, the first part of the project consisted of
+reasearching solutions for the various building blocks. These were broken up
+into three inter-dependent categories. 
 
+I will first discuss which options were considered to supply power to the
+modules, in \tref{sub:power-supply}. These are then compared with a list of
+possible wireless transmission devices and protocols (\tref{sub:wireless}), which
+will be managed by a microcontroller (\tref{sub:microcontroller}). All of these
+have been chosen to operate in similar voltage ranges, while using as little
+current as possible, in order to waste as little power as possible.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Power supply}
+\label{sub:power-supply}
 % todo : power supply
-Why NiMH? Why not LiPO? Why not use a DC-DC converter?
+\textbf{Why NiMH? Why not LiPO? Why not use a DC-DC converter?}
+
+From a brief overview of microcontrollers and wireless transmitters, it appears
+that the most common solutions operate at voltages between \unit[2]{V} and
+\unit[3.6]{V}. In addition, we expect our final system to use very little
+average power (\unit[1-10]{$\mu$A}), composed of long periods at
+\unit[1]{$\mu$A} or less, and small peaks at approximately \unit[50]{$\mu$A}. It
+was also expected that some add-on boards may require a \unit[5]{V} power
+source.
+
+In addition, we would like our system to last over one month on a single charge, 
+and for the design to be resonably straightforward, since development time is an
+issue in the context of a semester project.
+
+Lithium Polymer, Lithium ion and NiMH accumulators were both considered as
+possible power source options. 
+
+% TODO : get some data for self-discharge
+\begin{table}
+  \centering
+  \begin{tabular}{l|l|l|l}
+    Solution	& Nominal Voltage	& Self-discharge	& Complexity \\
+    \hline
+    NiMH 	& \unit[0.7-1.4]{V}	& Very low		& -	     \\
+    NiMH x2 	& \unit[1.4-2.8]{V}	& Very low		& -	     \\
+    NiMH x3 	& \unit[2.1-4.5]{V}	& Very low		& -	     \\
+    LiPo 	& \unit[2.7-4.23]{V}	& low			& ++	     \\
+    Li-Ion 	& \unit[2.7-4.23]{V}	& 5-10\%		& ++	     \\
+  \end{tabular}
+  \caption{Comparison of power sources}
+  \label{tab:battery-comparison}
+\end{table}
+
+As illustrated in \TAB{tab:battery-comparison}, the simplest and cheapest
+implementation involves two NiMH batteries. With the requirements set
+previously, this solution may not even require any voltage conversion, saving
+one component which is most likely to dissipate power.
+
+In a device with such low power consumption requirements, self-discharge becomes
+an important feature to take into account, since the capacity lost through
+self-discharging will be of the same order of magnitude as the power used by the
+device itself.
+
+All three solutions considered nowadays seem to offer very good self-discharge
+rates, even in NiMH batteries, which used not to be the case. In recent years,
+some commercial solutions have surfaced, offering batteries which offer
+virtually no self-discharge past 70\% of their original
+charge\cite{testingeneloop}.
+
+In light of these observations, it was decided that the modules would be powered
+by two AA size NiMH rechargeable batteries. This offers the most flexibility for
+the end user, as they are extremely easy to find, allows for quick and easy
+testing using regular alkaline batteries, and does not require any specific
+circuitry to manage over- and under-voltage protection. NiMH batteries can also
+be trickle-charged at low currents without risking much damage, which may be a
+useful feature in case the modules are to be retro-fitted with a solar charger
+for instance.
+
+More details about the actual implementation of the power supply are provided in
+\tref{sub2:hardware-powersupply}.
+
+\subsubsection{Use of a DC-DC converter}
+After the choice was made to use NiMH batteries, a solution was evaluated to
+provide constant power to the board. By using a DC-DC converter, it can
+effectively be possible to squeeze a little more power out of the batteries, by
+draining them lower than the operating voltage of our device, as well as
+providing a more even supply voltage to our end circuit.
+
+Considering the solutions described in the following sections, our device will
+be capable of operating at voltages between \unit[2]{V} and \unit[3.6]{V}. The
+preferred solution of two NiMH cells theoretically provides voltages between
+\unit[1.4]{V} and \unit[2.8]{V}. Thus it seems interesting to extend the
+operation of the circuit into the batterie's lower charge area. If the relation
+between battery voltage and discharge were linear, this would provide us with a
+substantial increase in operating time. However, as illustrated in
+\FIG{fig:discharge-curve}, the discharge profile of NiMH batteries is very much
+non-linear.
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics[width=0.6\textwidth]{nimh-discharge-curve-commented}
+  \end{center}
+  \caption{Typical NiMH discharge curve}
+  \label{fig:discharge-curve}
+\end{figure}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Wireless}
+\label{sub:wireless}
 
 Several wireless communication solutions were considered during the design
 phase. We will begin with a brief overview of the solutions that were considered
@@ -286,7 +391,8 @@ easy to implement, to avoid ``reinventing the wheel'' in terms of radio
 transmissions.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{ZigBee : defining reasons}
+\subsubsection{ZigBee : defining reasons}
+\label{sub:zigbee}
 % TODO : turn this into real text
 
 For most of the reasons mentioned above, the solution which was chosen for this
@@ -315,7 +421,7 @@ transmitted.
 % TODO : mention stuff that might be better after consideration, ie 6LowPAN
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Current implementation}
+\subsubsection{Current implementation}
 For reference, the addresses of the five modules used in this project are listed
 in \TAB{tab:addresses}. These addresses may be used to communicate to a specific
 device if the short (16-bit) local address is not known. The addresses for known
@@ -339,6 +445,7 @@ modules are already contained in the source code for quick re-use.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Microcontroller}
+\label{sub:microcontroller}
 Why go for an ATXMEGA?
 Explain the reason for getting a 64-pin instead of the cheaper XMEGAxxA4.
 Don't forget to mention : in the hardware design, only I/Os that are also
@@ -463,6 +570,7 @@ space on the board.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Power supply}
+\label{sub2:hardware-powersupply}
 % TODO : insert picture of power supply design
 
 The nodes can have various power sources. They were designed to function on two
@@ -524,7 +632,7 @@ expansion port, is was designed to provide any functionality that one may
 require. The expansion port uses a two-way, 20-pin connector with a \unit[2]{mm}
 pitch.
 
-\begin{figure}[hp]
+\begin{figure}[!h]
   \begin{center}
     \includegraphics[width=0.7\textwidth]{blocks/wm_sensor_io}
   \end{center}
@@ -604,7 +712,7 @@ from one wireless node.
 % TODO : check name of regulator, add part number
 
 % TODO : mention which annex contains motion sensor schematic
-\begin{figure}[H]
+\begin{figure}[!h]
   \begin{center}
     \includegraphics[width=0.6\textwidth]{flowcharts/motion-flowchart-colour}
   \end{center}
