@@ -166,38 +166,43 @@ internal GPS.
 
 Several projects in the ELab have been focused around the idea of a Powerline
 network : modules that plug into a regular household socket and transmit data
-along the power lines. The first project by Thierry Barras\cite{barras2009} was
-to develop a set of modules that can communicate together on the power network.
+along the power lines. The first project by Thierry Barras\cite{barras2009}
+involved the development of a set of modules that can communicate together on
+the power network.
 
 Later projects added a Wi-Fi interface\cite{sallin2010}, which allowed the nodes
 to be controlled by any internet-capable device, a GSM module\cite{sallin2010},
 which can accept commands by text messages, and a touch-screen interface.
 
-These are some building blocks that could lead to a complete home automation
-solution, allowing to control many aspects of day-to-day life automatically,
-including electric blinds, appliances, security devices and home entertainment.
-One key area that is currently missing from these projects though is the ability
-to interact with users and sensors in areas devoid of electrical power.
+These are some of the building blocks that could lead to a complete home
+automation solution, allowing to control many aspects of day-to-day life
+automatically, including electric blinds, appliances, security devices and home
+entertainment.  One key area that is currently missing from these projects
+though is the ability to interact with users and sensors in areas devoid of
+mains electricity.
 
 If a user wishes to add a light switch on a wall, measure the outdoor
 temperature, or place motion detectors without pulling long and ugly extension
 cords, that is not currently possible with the existing modules.
 
+\pagebreak
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Overview}
+In view of the limitations exposed in the previous section, this semester
+project aims to provide a base platform to extend the Powerline network with a
+set of wireless nodes. These nodes should provide the ability to place motion
+sensors, environmental sensors, and dimmer switches anywhere within a certain
+distance of the powerline network. 
 
-This project aims to extend the Powerline network with the addition of wireless
-nodes. At the moment, the existing system can control appliances, measure power
-consumption, and be controlled by various interfaces. However, there is not yet
-a way to connect light switches in places where there is no available power, or
-to place sensors at various places, including the garden, for instance.
+% todo : example use case? light switch on a desk or close to a home
+% entertainment system. monitor the temperature/humidity in a wine cellar.
+% detect people arriving at the door
 
-This project is a step in that direction. The goal for this semester project is
-not necessarily to produce a final design for a wireless sensor network, but
-rather to produce a working demonstration to show how the technology could be
-used, as well as to explore some possibilities in the reduction of power usage.
-The wireless nodes that comprise the network must operate on a small power
-source for as long a time as possible.
+The goal for this semester project is not necessarily to produce a final design
+for a wireless sensor network, but rather to produce a working demonstration to
+show how the technology could be used, as well as to explore some possibilities
+in the reduction of power usage.  The wireless nodes that comprise the network
+must operate on a small power source for as long a time as possible.
 
 These were the main considerations when researching solutions for the various
 functional blocks of the project. When possible, I favoured ease of use and
@@ -222,10 +227,12 @@ Most of these modules will be running of their own limited power source. It is
 thus essential that the power consumption be as low as possible. Low power usage
 must be the main driving force behind all design decisions, so as to maximise
 the autonomy of the wireless nodes. 
-As a reference, we would like the nodes to be able to run for several months
+
+As a guideline, we would like the nodes to be able to run for several months
 without needing to be recharged. In the event that the power runs out, it must
 be easy to identify which nodes have run out of power, and they must be easy to
 recharge. 
+
 All these points have been accounted for in the hardware design, but most of
 them have not yet been implemented in software. 
 
@@ -245,8 +252,6 @@ current as possible, in order to waste as little power as possible.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Power supply}
 \label{sub:power-supply}
-% todo : power supply
-\textbf{Why NiMH? Why not LiPO? Why not use a DC-DC converter?}
 
 From a brief overview of microcontrollers and wireless transmitters, it appears
 that the most common solutions operate at voltages between \unit[2]{V} and
@@ -322,7 +327,8 @@ operation of the circuit into the batterie's lower charge area. If the relation
 between battery voltage and discharge were linear, this would provide us with a
 substantial increase in operating time. However, as illustrated in
 \FIG{fig:discharge-curve}, the discharge profile of NiMH batteries is very much
-non-linear.
+non-linear. Although the battery is considered ``dead'' around \unit[1.7]{V}, it
+remains above \unit[2]{V} for over 90\% of its life.
 
 \begin{figure}[!h]
   \begin{center}
@@ -331,6 +337,16 @@ non-linear.
   \caption{Typical NiMH discharge curve}
   \label{fig:discharge-curve}
 \end{figure}
+
+
+To constrast with this, the best DC-DC converters I was able to find offer
+efficiencies between 60-98\% (maximum efficiency is only achieved at a specific
+load, and decreases if the target is drawing more or less current). The
+buck/boost converters that were considered for this also demonstrate quiescent
+currents of an order of magnitude comparable to the expected operating current
+of the device, or higher. Based on these facts, this idea was dismissed for this
+particular application, but it may be worth considering in a situation where the
+current draw is higher and expected to be constant.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -393,16 +409,12 @@ transmissions.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{ZigBee : defining reasons}
 \label{sub:zigbee}
-% TODO : turn this into real text
 
 For most of the reasons mentioned above, the solution which was chosen for this
 design were a set of XBee transmitters from Digi
 International\furl{http://digi.com}. These modules are (in theory) very easy to
 set up and get operational in a short time, and ensured that not too much time
 would be wasted on the wireless transmission part of the project.
-
-\textbf{say a few words about ZigBee, interoperability, application profiles
-etc}
 
 In addition, they are supposedly fully compliant with the
 ZigBee\furl{http://zigbee.org} specification, which should allow the project to
@@ -417,11 +429,74 @@ give me a little head start in understanding how packets are assembled and
 transmitted.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Afterthoughts}
-% TODO : mention stuff that might be better after consideration, ie 6LowPAN
+%\subsubsection{Afterthoughts}
+%\label{sub2:afterthoughts}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Current implementation}
+\subsection{Microcontroller}
+\label{sub:microcontroller}
+Why go for an ATXMEGA?
+Explain the reason for getting a 64-pin instead of the cheaper XMEGAxxA4.
+Don't forget to mention : in the hardware design, only I/Os that are also
+available on the 44 pin version were used. Also, because of the good modularity
+of the XMEGA family, the code can be ported without any changes from one device
+to another.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagebreak
+\section{Network topology}
+\label{sec:network-topology}
+
+Zigbee is designed to work well in a mesh configuration. However, this requires
+some ``repeater'' nodes (routers) to be constantly on to relay transmissions
+from the end nodes. Since the battery-powered devices cannot be expected to run
+continuously, the network will function in a star topology.
+
+In this configuration, the gateway device is powered from the grid, and the
+wireless sensor nodes wake up at a given interval and transmit their data to the
+gateway. The nodes do not require any incoming transmissions as they are
+configured to transmit regularly. This is the most efficient way of saving
+power, but it does limit functionality to a certain extent.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=0.8\textwidth]{flowcharts/topology-flows}
+  \end{center}
+  \caption{Topology chart illustrating information flows}
+  \label{fig:topology-flows}
+\end{figure}
+
+If future applications require it though, it is possible to configure Zigbee end
+nodes to wake up regularly and listen for incoming transmissions. If an end node
+is asleep when a packet is sent to it, it will be buffered by the nearest router
+or coordinator until the node wakes up. It is best to avoid this mode though,
+since it reduces battery life, and causes an inherent delayed reaction time.
+
+\Fig{fig:topology-flows} illustrates the topology chosen for the demonstration
+which will be presented at the end of this project, and shows which way
+information flows. 
+
+
+This scenario demonstrates a simple network of four nodes. At the center of it,
+the Gateway acts as a coordinator, and can receive transmissions from any other
+node. Any node which wishes to join the network must connect to the coordinator
+and is attributed a 16-bit local address. The network uses a local identifier to
+regroup all the nodes, which is referred to as a PAN ID. The coordinator is
+configured to use PAN ID \bash{0x1984}.
+
+Two nodes react to user interaction, and send commands either to dim a lamp or
+to turn it on when it detects movement. These commands are sent to the gateway
+and forwarded to the powerline network.
+
+A third node takes periodic measurements of its sensor values, but rather than
+sending them through the powerline network, they are sent directly to a receiver
+connected to a computer by USB. From there, the data can be logged and graphed
+from a MATLAB or Python script on the host computer. Additionally, it would be
+possible to act on the data and send commands to the powerline network from the
+computer, wirelessly. This however is not implemented in the current demo.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 For reference, the addresses of the five modules used in this project are listed
 in \TAB{tab:addresses}. These addresses may be used to communicate to a specific
 device if the short (16-bit) local address is not known. The addresses for known
@@ -443,79 +518,23 @@ modules are already contained in the source code for quick re-use.
   \label{tab:addresses}
 \end{table}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Microcontroller}
-\label{sub:microcontroller}
-Why go for an ATXMEGA?
-Explain the reason for getting a 64-pin instead of the cheaper XMEGAxxA4.
-Don't forget to mention : in the hardware design, only I/Os that are also
-available on the 44 pin version were used. Also, because of the good modularity
-of the XMEGA family, the code can be ported without any changes from one device
-to another.
+We can see here that nodes 1 to 3 were configured as end devices. This means
+that their sole purpose is to initiate communications, or receive them as they
+wake periodically from sleep. They will not assist the network by forwarding
+messages. If nodes are to be placed further from the gateway than the range of
+the transmitters allow, it would be advised to add a powered device, configured
+as a router, somewhere in between the remote device and the gateway, to extend
+the range of the network. It must be noted that only \emph{one} ZigBee device
+can act as a coordinator. 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Network topology}
-\label{sec:network-topology}
-
-Zigbee is designed to work well in a mesh configuration. However, this requires
-some ``repeater'' nodes (routers) to be constantly on to relay transmissions
-from the end nodes. Since the battery-powered devices cannot be expected to run
-continuously, the network will function in a star topology.
-
-In this configuration, the gateway device is powered from the grid, and the
-wireless sensor nodes wake up at a given interval and transmit their data to the
-gateway. The nodes do not require any incoming transmissions as they are
-configured to transmit regularly. This is the most efficient way of saving
-power, but it does limit functionality to a certain extent.
-
-If future applications require it though, it is possible to configure Zigbee end
-nodes to wake up regularly and listen for incoming transmissions. If an end node
-is asleep when a packet is sent to it, it will be buffered by the nearest router
-or coordinator until the node wakes up. It is best to avoid this mode though,
-since it reduces battery life, and causes an inherent delayed reaction time.
-
-\Fig{fig:topology-flows} illustrates the topology chosen for the demonstration
-which will be presented at the end of this project, and shows which way
-information flows. 
-
-\begin{figure}[h]
-  \begin{center}
-    \includegraphics[width=0.8\textwidth]{flowcharts/topology-flows}
-  \end{center}
-  \caption{Topology chart illustrating information flows}
-  \label{fig:topology-flows}
-\end{figure}
-
-This scenario demonstrates a simple network of four nodes. At the center of it,
-the Gateway acts as a coordinator, and can receive transmissions from any other
-node. Any node which wishes to join the network must connect to the coordinator
-and is attributed a 16-bit local address. The network uses a local identifier to
-regroup all the nodes, which is reffered to as a PAN ID. The coordinator is
-configured to use PAN ID \bash{0x1984}.
-
-Two nodes react to user interaction, and send commands either to dim a lamp or
-to turn it on when it detects movement. These commands are sent to the gateway
-and forwarded to the powerline network.
-
-A third node takes periodic measurements of its sensor values, but rather than
-sending them through the powerline network, they are sent directly to a receiver
-connected to a computer by USB. From there, the data can be logged and graphed
-from a MATLAB or Python script on the host computer. Additionally, it would be
-possible to act on the data and send commands to the powerline network from the
-computer, wirelessly. This however is not implemented in the current demo.
-
-
+\pagebreak
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Hardware design}
 
-Go over hardware in blocks
-
-Explain the difference between receiver and emitters
-
-Show details of sensor expansion port
-
-% TODO : also mention USB debugger!!
+This section will detail the different hardware parts that make up this project. 
+It will begin with the base platform which is common to all devices, and will be
+followed by a presentation of each of the add-on modules that were developed for
+evaluating the platform.
 
 Some mistakes were noticed only after fabrication, and some corrections have
 been made. Since they are not relevant to the understanding of the project, they
@@ -530,6 +549,22 @@ Section \ref{sec:design-changes}
 Each sensor node consists of a basic board and a sensor add-on. The basic board
 provides standard features common to all the nodes, such as network
 connectivity, power management, and processing.
+
+\Fig{fig:base-topview} shows the basic hardware, with the wireless transmitter
+in the center, just above the expansion port. On the left are the UART interface
+to the powerline modules (bottom), the JST connector for an external charger
+(middle), and a power switch (not present). LEDs above the XBee module indicate
+its current status. These must not be placed on the battery-powered nodes, as
+they will increase the power usage. Six extra I/O pins are available on the
+right-hand side, mainly intended for debug purposes.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=0.8\textwidth]{top-view}
+  \end{center}
+  \caption{Top view of the wireless node base hardware}
+  \label{fig:base-topview}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Overview}
@@ -553,38 +588,41 @@ by the user to turn the node on and off.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Microcontroller}
 
-The current version of the board uses a 64-pin microcontroller, because it
-was impossible to source a 44-pin version at design time. The schematics and
-code were designed with a 44 pin microcontroller in mind, and it would be
-trivial to adapt the design to the smaller version to reduce cost, and use less
-space on the board.
+Although the project was originally supposed to use an ATXMEGA32A4, no suppliers
+had the part ready to order when the design started. Luckily, code written for
+one device of the XMEGA family is completely portable to any other, excluding
+the ports and peripherals that do not exist in one or the other. Therefore,
+rather than use the intended 44-pin microcontroller, we used a version with more
+I/O pins, namely the ATXMEGA64A4. To ensure that the code and design would be
+easily back-portable to the smaller microcontroller (to save on hardware costs),
+the extra pins were either unused, or used as debug pins. Six pins of port F
+were thus dedicated to the purpose of debugging. 
 
-\begin{figure}[htpb]
-  \begin{center}
-    \includegraphics[width=0.9\textwidth]{blocks/wm_microcontroller}
-  \end{center}
-  \caption{ATXMEGA Microcontroller}
-  \label{fig:microcontroller}
-\end{figure}
-
+The connections between the microcontroller and other peripherals in the board
+can be found in section \tref{sub:sch-wirelessmodule} of the appendix.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Power supply}
 \label{sub2:hardware-powersupply}
-% TODO : insert picture of power supply design
 
 The nodes can have various power sources. They were designed to function on two
-AA batteries, which provide voltages between 2 and \unit[3.2]{V}. All components on
-the board were chosen to operate in this voltage range.
+AA batteries, which provide voltages between 2 and \unit[3.2]{V}. All components
+on the board were chosen to operate in this voltage range.
 
 To reduce the size requirements, the batteries are placed directly on the board,
-on either side of the the radio transmitter.
+on either side of the the radio transmitter. 
 
 On the left side of the board, a 4-pin JST header provides a connection to an
 external charger (or solar power module). The power lines can be disconnected by
 the main controller, and two communication lines are available for information
 exchange between the sensor node and its power source. These lines are connected
 to the ATXMEGA's USART lines in case serial communication is desired.
+
+As illustrated in \FIG{fig:solar-charger}, a resistor divider placed before the
+switch allow the host microcontroller to measure the external voltage, without
+having to connect it. The output of the block outlined in
+\FIG{fig:solar-charger} is connected directly to the batteries. The external
+source is expected to manage the charging current.
 
 \begin{figure}[h]
   \begin{center}
@@ -598,23 +636,6 @@ In addition to this, the input voltage can be measured with a voltage divider,
 and disconnected if it is not needed. The ATXMEGA has a built-in module for
 measuring its own supply voltage, using a 10x voltage divider with a \unit[1]{V}
 reference.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Debug}
-
-The nodes were designed to function the same way if the microcontroller was
-replaced by a 44-pin version. This leaves one port unused on the ATMEGA64A3,
-which was thus used as a debug port. Five pins are available on the right side
-of the device to display status on an LED or to send debug data through USARTF0.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Discarded features}
-
-Several features originally included in the design or enumerated during the
-design phase were discarded. I will go over some of these and explain the
-reasons behind these choices.
-
-% TODO : discuss board layout?
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Sensor boards}
@@ -656,8 +677,7 @@ connectivity:
 Due to the layout of the board, the sensor add-ons have to be very small. In
 order to reduce the vertical space needed by the sensors nodes, the batteries
 and radio transmitters were placed on the same face of the board as the add-on
-connector. Therefore, the space left is only approximately \unit[25x25]{mm$^2$}.
-% todo : find exact measurements
+connector. Therefore, the space left is only approximately \unit[22x20]{mm$^2$}.
 This is sufficient however for most basic applications. If more space is needed,
 it is assumed that the designer will route the necessary connections on the
 add-on board, then connect any other sensors off-board using connector cables.
@@ -771,7 +791,7 @@ the nodes.
 
 \begin{figure}[!h]
   \begin{center}
-    \includegraphics[width=0.5\textwidth]{flowcharts/dimmer-flowchart-colour}
+    \includegraphics[width=0.95\textwidth]{flowcharts/dimmer-flowchart-colour}
   \end{center}
   \caption{Dimmer node operation}
   \label{fig:dimmer-flowchart}
@@ -785,6 +805,26 @@ the nodes.
 % and off.
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{USB Adapter}
+\label{sub2:xbee-usb}
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=0.5\textwidth]{3d-xbeeusb}
+  \end{center}
+  \caption{XBee USB Adapter}
+  \label{fig:xbeeusb}
+\end{figure}
+
+In order to facilitate development and testing, a small board was made,
+based on some existing projects\footnote{Mainly Sparkfun's USB XBee Explorer :
+\url{http://www.sparkfun.com/products/8687}}, which provides a USB-Serial
+interface to an XBee module. Using this device, it is possible to quickly
+assemble packets to test communication between modules, as well as receive
+communications from the modules. In the demonstration, this is used to receive
+temperature and ambient light data from the sensor node, which can then be
+logged on the computer and displayed on screen.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Software considerations}
@@ -971,16 +1011,24 @@ some other areas are in need of more attention.
 % todo : include schematics
 
 \subsection{Wireless base module}
+\label{sub:sch-wirelessmodule}
 \includepdf[landscape=true, pages={1,2,3}]{pdfs/WirelessModule_Schematics.PDF}
 
 \subsection{Motion sensor add-on}
+\label{sub:sch-motionboard}
 \includepdf[landscape=true, pages={1,2}]{pdfs/motionboard}
 
 \subsection{Dimmer add-on}
+\label{sub:sch-dimmerboard}
 \includepdf[landscape=true, pages={1,2}]{pdfs/dimmerboard}
 
 \subsection{Environmental sensor add-on}
+\label{sub:sch-sensorsboard}
 \includepdf[landscape=true, pages={1,2}]{pdfs/sensorsboard}
+
+\subsection{XBee USB Adapter}
+\label{sub:sch-usbboard}
+\includepdf[landscape=true, pages={3,1}]{pdfs/xbee-adapter}
 
 \pagebreak
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
