@@ -94,10 +94,6 @@
 \definecolor{grey75}{gray}{0.75}
 \definecolor{grey45}{gray}{0.45}
 
-% todo : add macros for ATXMEGA, AVR?
-
-% TODO : add references in bib for application notes, esp AVR1010
-
 \lstdefinestyle{console}
 {
   numbers=none,
@@ -436,12 +432,87 @@ transmitted.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Microcontroller}
 \label{sub:microcontroller}
-Why go for an ATXMEGA?
-Explain the reason for getting a 64-pin instead of the cheaper XMEGAxxA4.
-Don't forget to mention : in the hardware design, only I/Os that are also
-available on the 44 pin version were used. Also, because of the good modularity
-of the XMEGA family, the code can be ported without any changes from one device
-to another.
+The microcontroller sits at the center of our design. It instructs the wireless
+transmitter on when to wake up to begin transmitting, and takes care of sampling
+the sensors at the right time and reacting to events using hardware
+interruptions. Since it must be always on (or in sleep mode, with or without a
+timer running), it is essential to choose a solution that uses very little
+power.
+
+After an overview of the solutions available to us, four were selected for a
+closer comparison. \Tab{tab:microcontrollers} Summarizes the main power
+consumption characteristics of these microcontrollers.
+
+\begin{table}
+  \centering
+  \begin{tabular}{l|l|l|l|l}
+    Microcontroller	& Sleep	& RTC Sleep & Normal & Min supply [V]	\\
+    \hline
+    ATXMEGAxxA4		& \unit[100]{nA} & \unit[600]{nA} &
+    			$\unitfrac[300]{\mu{}A}{Mhz}$ & \unit[1.8]{V}	\\
+    ATmegaxxxPA		& \unit[100]{nA} & \unit[650]{nA} &
+    			$\unitfrac[400]{\mu{}A}{Mhz}$ & \unit[1.8]{V}	\\
+    PIC24F16KA102	& \unit[20]{nA} & \unit[510]{nA} &
+    			$\unitfrac[182]{\mu{}A}{Mhz}$ & \unit[1.8]{V}	\\
+    MSP430F2001		& \unit[50]{nA} & \unit[600]{nA} &
+    			$\unitfrac[170]{\mu{}A}{Mhz}$ & \unit[1.8]{V}	\\
+  \end{tabular}
+  \caption{Microcontroller comparison}
+  \label{tab:microcontrollers}
+\end{table}
+
+Here are some orders of magnitude to keep in mind when evaluating the power
+consumption of our microcontroller:
+\begin{enumerate}
+  \item A typical transmission will last less than \unit[20]{ms}. After
+    experimenting, the longest time observed occured when the transmitter had to
+    re-associate with the network after waking from sleep, resulted in a
+    \unit[60]{ms} delay.
+  \item In the case of sensors being sampled, the microcontroller will remain in
+    sleep mode, and wake on intervals in the order of 30 seconds to several
+    minutes. 
+  \item In the case of a hardware button which is triggered by the user, the
+    microcontroller can remain in deep sleep mode with all internal and external
+    peripherals disabled, and wake only on external events. In this case, even
+    if the button were to be activated fifty times per day, the device would
+    only be waking on average once every half hour.
+\end{enumerate}
+
+For a rapid evaluation, let us estimate that our device will be active for
+\unit[30]{ms} every \unit[30]{s}. This yields an active/sleep duty cycle of
+$\unit[30]{ms}/\unit[30]{s}=10^{-3}=0.1\%$. Using the data from
+\TAB{tab:microcontrollers}, and assuming a \unit[2]{Mhz} clock speed, we can see
+that the average power consumed during normal operation, when averaged over a
+complete period, is of the same order of magnitude as the current used in RTC
+Sleep\footnote{RTC Sleep: all peripherals are disabled, except the Real Time
+Clock counter, which wakes the microcontroller periodically} mode. We can thus
+estimate the consumption of the microcontroller to approximately
+\unit[1-10]{$\mu{}A$}.
+
+The power source chosen was two rechargeable AA batteries. These typically
+advertise approximately \unit[2000]{mAh} capacity. A quick calculation using the
+previous estimations indicates that if the batteries were to power the
+microcontroller alone, it would provide a life, if used correctly, of:
+
+\begin{equation}
+  \frac{\unit[2000]{mAh}}{\unit[10]{\mu{}A}} = 
+  \frac{\unit[2]{Ah}}{\unit[10^{-5}]{A}} =
+  \unit[200000]{h} = \unit[22]{years}
+  \label{eq:battery-life}
+\end{equation}
+
+Which clearly shows that with the current generation of low-power
+microcontrollers, this will be the last of our worries. Since the wireless
+module advertises a standby (ready to receive) current in the order of
+\unit[50]{mA}, it will be much more important to make sure that our wireless
+transmitter remains asleep when we need it, rather than optimise the code in our
+microcontroller to gain even a few milliseconds of execution time.
+
+In light of all this, the preference went to Atmel's ATXMEGA solution, since it
+seemed to provide the most flexibility and hardware features, while still
+demonstrating power requirements very similar to the other (less feature-rich)
+offerings.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagebreak
@@ -541,7 +612,7 @@ been made. Since they are not relevant to the understanding of the project, they
 have been placed in the appendix. However, it is highly recommended to read
 through this errata before starting to use the wireless modules, and especially
 if the design files are to be used again or modified. The list can be found in
-Section \ref{sec:design-changes}
+Section \tref{sec:design-changes}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Base board}
@@ -618,12 +689,6 @@ the main controller, and two communication lines are available for information
 exchange between the sensor node and its power source. These lines are connected
 to the ATXMEGA's USART lines in case serial communication is desired.
 
-As illustrated in \FIG{fig:solar-charger}, a resistor divider placed before the
-switch allow the host microcontroller to measure the external voltage, without
-having to connect it. The output of the block outlined in
-\FIG{fig:solar-charger} is connected directly to the batteries. The external
-source is expected to manage the charging current.
-
 \begin{figure}[h]
   \begin{center}
     \includegraphics[width=0.8\textwidth]{blocks/wm_solar_charging}
@@ -632,10 +697,43 @@ source is expected to manage the charging current.
   \label{fig:solar-charger}
 \end{figure}
 
+As illustrated in \FIG{fig:solar-charger}, a resistor divider placed before the
+switch allow the host microcontroller to measure the external voltage, without
+having to connect it. The output of the block outlined in
+\FIG{fig:solar-charger} is connected directly to the batteries. The external
+source is expected to manage the charging current.
+
 In addition to this, the input voltage can be measured with a voltage divider,
 and disconnected if it is not needed. The ATXMEGA has a built-in module for
 measuring its own supply voltage, using a 10x voltage divider with a \unit[1]{V}
 reference.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Gateway device}
+
+Each network is normally comprised of one gateway device. This device uses the
+same basic hardware as the sensor node, although it requires less components.
+
+% TODO : insert picture of gateway node
+
+Its sole purpose is to forward incoming wireless transmissions onto the
+Powerline network to control the Powerline devices. In its current
+implementation, it simply parses the ZigBee packets, strips them of all the
+additional information (headers, checksums, addressing etc.) and then forwards
+the data onto the Powerline nodes.
+
+On one hand, this means that the nodes are free to send any data they wish,
+since it does not have to be interpreted by the gateway, but at the same time,
+the commands for the powerline network must be embedded into the end nodes. The
+main advantage of this situation is that if some functionality is added to a
+powerline module, and a wireless node is added to complement it, there is no
+need to reprogram the gateway to take these new features into account.
+
+Since the gateway device is destined to be plugged in to a wall socket, it will
+always be active and listening for transmissions. It functions as the network
+coordinator. Therefore, any packets which must be transmitted to the Powerline
+network are to be addressed to the ZigBee coordinator, whose 64-bit address is :
+\bash{00:00:00:00:00:00:00:00}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Sensor boards}
@@ -684,33 +782,6 @@ add-on board, then connect any other sensors off-board using connector cables.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Gateway device}
-
-Each network is normally comprised of one gateway device. This device uses the
-same basic hardware as the sensor node, although it requires less components.
-
-% TODO : insert picture of gateway node
-
-Its sole purpose is to forward incoming wireless transmissions onto the
-Powerline network to control the Powerline devices. In its current
-implementation, it simply parses the ZigBee packets, strips them of all the
-additional information (headers, checksums, addressing etc.) and then forwards
-the data onto the Powerline nodes.
-
-On one hand, this means that the nodes are free to send any data they wish,
-since it does not have to be interpreted by the gateway, but at the same time,
-the commands for the powerline network must be embedded into the end nodes. The
-main advantage of this situation is that if some functionality is added to a
-powerline module, and a wireless node is added to complement it, there is no
-need to reprogram the gateway to take these new features into account.
-
-Since the gateway device is destined to be plugged in to a wall socket, it will
-always be active and listening for transmissions. It functions as the network
-coordinator. Therefore, any packets which must be transmitted to the Powerline
-network are to be addressed to the ZigBee coordinator, whose 64-bit address is :
-\bash{00:00:00:00:00:00:00:00}.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Motion sensor}
 
 As its name indicates, the purpose of this board is to detect movement. This
@@ -727,11 +798,9 @@ The hardware design of this board is straightforward : a charge pump converter
 provides the supply voltage to the sensor(s), whose inputs are connected to two
 microcontroller input pins, where they can trigger interrupts. One sensor board
 is equipped with two connectors, to potentially drive two seperate PIR modules
-from one wireless node.
+from one wireless node. Schematics for the motion sensor add-on board can be
+found in section \tref{sub:sch-motionboard} of the appendix.
 
-% TODO : check name of regulator, add part number
-
-% TODO : mention which annex contains motion sensor schematic
 \begin{figure}[!h]
   \begin{center}
     \includegraphics[width=0.6\textwidth]{flowcharts/motion-flowchart-colour}
@@ -752,42 +821,55 @@ improving the overall efficiency by removing the charge pump regulator.
 
 In the current demonstration, the motion sensor node is configured to turn on a
 lamp when motion is detected. If no movement is detected for a period of 30
-seconds, the light is turned off again.
-
-% TODO : link to website and note article numbers.
+seconds, the light is turned off again. \Fig{fig:motion-flowchart} shows the
+basic functionality of the motion sensor module.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Environmental sensors}
 
 The environment sensing board is comprised of three sensors:
 
-%\begin{enum}
-%  \item Barometer
-%  \item Temperature sensor
-%  \item Capacitive humidity sensor
-%\end{enum}
+\begin{itemize}
+  \item Barometer
+  \item Temperature sensor
+  \item Capacitive humidity sensor
+\end{itemize}
 
 
 The barometer and temperature were both chosen for their low consumption and
 easy communication (both use the I$^{2}$C bus on the expansion port).
 
-The capacitive humidity sensor was chosen for it's price, but as a consequence,
+The capacitive humidity sensor was chosen for its price, but as a consequence,
 it is very inaccurate and requires calibration.
+
+The program for reading the sensors is very basic: the microcontroller turns off
+all communication interfaces on the sensors and goes to sleep, leaving the RTC
+clock running. It then wakes up at regular intervals, queries the sensors for
+new information, sends it to the USB module, and goes back to sleep.
+Unfortunately, the sensors are not 100\% functional in the demonstration.
+Details can be found in section \tref{sub:problems-sensors} in the appendix.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Light controller}
 
-The final module is intended to control lights. It include connections for two
+The final module is intended to control lights. It provides connections for two
 momentary switches, as well as two potentiometers which can be turned on and
 off. With this module, the microcontroller can be configured to remain in deep
-sleep and only awake on a hardware interruption generated by the switches, or to
-wake up periodically to sample the potentiometer.
+sleep and only wake up on a hardware interruption generated by the switches, or
+to wake up periodically to sample the potentiometer.
 
 The board itself includes footprints for SMD switches, for testing purposes, but
 since the nodes are eventually meant to reside in cases, the buttons and
 potentiometers are to be fixed to the enclosure and connected to the add-on
 board using cables. This allows a little flexibility in the physical design of
 the nodes.
+
+Since a potentiometer dissipates power when it is connected, it has been placed
+on a microcontroller pin. It is only enabled just before making a reading, and
+then disconnected. It is advisable to wait a short while after enabling the
+potentiometer, to charge the ADC input capacitor before initiating a conversion.
+Details of the add-on board can be found in section \tref{sub:sch-dimmerboard} of
+the appendix.
 
 \begin{figure}[!h]
   \begin{center}
@@ -797,12 +879,22 @@ the nodes.
   \label{fig:dimmer-flowchart}
 \end{figure}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% TODO : sampling the potentiometer
+\Fig{fig:dimmer-flowchart} shows how the dimmer node is expected to work. In
+this example, one button is used to toggle the light on and off, and the second
+button activates dimmer mode. 
 
-% extremities are connected between ground and a microcontroller pin. middle pin
-% (find what that's called : cursor?) goes on adc input. pot can be turned on
-% and off.
+If the light is off, and either button is pressed, the light will turn on. If
+the on/off button is pressed, it will turn on to 100\%. If the dimmer button is
+pressed, it will continuously take the value read from the potentiometer, until
+it is turned off.
+
+In order to provide a pleasant experience, the delay between readings of the
+potentiometer should be fairly short. Since we also wish to save power where
+possible, the delay between readings can be increased after a period of
+inactivity.
+
+Pressing the on/off button at any time when the light is turned on (even dimly),
+will turn the light off.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -826,6 +918,7 @@ communications from the modules. In the demonstration, this is used to receive
 temperature and ambient light data from the sensor node, which can then be
 logged on the computer and displayed on screen.
 
+\pagebreak
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Software considerations}
 
@@ -841,10 +934,15 @@ be expected for a semester project. It would in my mind be more interesting to
 have a very modular system than to hard-code the functionality of various
 modules, and have several code bases for different nodes.
 
-With this in mind, the code is organised in the following way:
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=0.95\textwidth]{flowcharts/code-hierarchy}
+  \end{center}
+  \caption{Example code hierarchy (not all files are listed)}
+  \label{fig:code-hierarchy}
+\end{figure}
 
-% todo : insert diagram of code hierarchy
-
+With this in mind, the code is organised as in \FIG{fig:code-hierarchy}.
 All code shares a common root. The folder \bash{xmega\_libs} contain libraries
 that are specific to the XMEGA microcontroller, mostly provided by Atmel.
 Although many hardware-level functions and registers were used in the main
@@ -870,22 +968,17 @@ on. Usually, the \bash{main.c} file is the only file that differs between the
 various nodes.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Low-power design}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Cost considerations}
 
 For the sake of ease of development, some sacrifices were made in the area of
 cost. For starters, the ATXMEGA is not very well suited to extremely low-cost
-designs, as it is quite a lot more expensive than some competing solutions,
-especially the PIC24F series and Cortex M3. On the other hand, it overs a very
+designs, as it is slightly more expensive than some competing solutions,
+especially the PIC24F series and Cortex M3. On the other hand, it offers a very
 modern architecture with many features to experiment with, which allows a lot of
 freedom for development and experimenting.
 
-% todo : mention choice of xmegaA3 over A4 and stuff
-Moreover,
 
-The other main area were cost was overlooked at the benefit of development time
+The main area were cost was overlooked at the benefit of development time
 is the wireless interface. Indeed, the average cost of an XBee module is
 approximately \$22, whereas it is possible to source modules from Microchip for
 instance that cost less than half as much. However, these require a one-time
@@ -899,11 +992,21 @@ compatibility with the existing modules.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Test results}
+% TODO : results
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conclusion}
+
+% TODO : Conclusion
+
+\pagebreak
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bibliographystyle{ieeetr}
 \bibliography{biblio-semproj}
 
 \pagebreak
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -970,10 +1073,11 @@ of this project, and the interface has thus not been tested. On the current
 version, the holes in the PCB are slightly too small. The connector pins must
 therefore be filed off (with a Dremel tool for instance) before they will fit in
 the footprint. This error has been corrected in the latest version of the Altium
-files. % TODO : verify this
+files.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Add-on boards}
+\label{sub:problems-sensors}
 Most features of the add-on boards have been tested and are functional, however
 a few issues remain.
 
@@ -1008,8 +1112,6 @@ some other areas are in need of more attention.
 \pagebreak
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Schematics}
-% todo : include schematics
-
 \subsection{Wireless base module}
 \label{sub:sch-wirelessmodule}
 \includepdf[landscape=true, pages={1,2,3}]{pdfs/WirelessModule_Schematics.PDF}
@@ -1033,10 +1135,10 @@ some other areas are in need of more attention.
 \pagebreak
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Microcontroller software}
-The following section contains the source code for the nodes. The XMEGA
-libraries by Atmel are available %TODO : here
+The following section contains the source code for the nodes. XMEGA-specific
+libraries were provided with Atmel application notes, and can be found as part
+of the XMEGA software framework\furl{http://asf.atmel.no/xmega/readme.html}
 
-% TODO : link to github repo
 The source code for the project is versioned using git and hosted on
 Github\furl{http://github.com}. For the foreseeable future, the code will live
 at the following address : \url{http://github.com/tunebird/semester-1-code}.
