@@ -32,7 +32,7 @@
     \includegraphics[width=0.6\textwidth]{sideview} 
      
     \HRule \\[2.0cm]
-     
+    
     %% Author and supervisor
     \begin{minipage}{0.4\textwidth}
       \begin{flushleft} \large
@@ -716,8 +716,6 @@ reference.
 Each network is normally comprised of one gateway device. This device uses the
 same basic hardware as the sensor node, although it requires less components.
 
-% TODO : insert picture of gateway node
-
 Its sole purpose is to forward incoming wireless transmissions onto the
 Powerline network to control the Powerline devices. In its current
 implementation, it simply parses the ZigBee packets, strips them of all the
@@ -998,46 +996,111 @@ compatibility with the existing modules.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Test results}
-% TODO : results
 
-Sensor node : XBee in Power mode ``high'', boost mode disabled, end node
-functionality, uses 14mA average, with a transmission every 500ms
+Once the network was up and running, and each node's functionality had been
+verified, some tests were performed to verify whether our power consumption
+objectives could be met.
 
-With xbee sleeping, uc on, and waking sensors periodically, consumption is 3mA
-which should yield approx one month on two AA batteries.
+In order to verify this, the environmental sensor node was connected to a power
+source, and configured for a typical application. In this test, the node was set
+to sleep for a short period, wake up the radio transmitter, sample the sensors
+while the radio is waking up, transmit the data, then re-enter sleep mode and
+repeat. The ZigBee radio was set to Power Mode ``High'', and Boost Mode was
+disabled.
+
+In this situation, the maximum current draw (at \unit[3.2]{V}), was of
+\unit[20]{mA} during a transmission. The average power draw in sleep mode was
+measured at $\unit[800]{\mu{}A}$. Since the time awake is so much shorter than
+the time spent sleeping, the overall average consumption of the module is below
+\unit[0.9]{mA}. The expected lifetime of the module with the current
+configuration is therefore : 
+
+\begin{equation}
+  \frac{\unit[2000]{mAh}}{\unit[0.9]{mA}} = \unit[2222]{hours} = \unit[93]{days}
+  \label{eq:env-sensors-consumption}
+\end{equation}
+
+Which clearly fits the requirements for several months of battery usage.
+Furthermore, it is worth noting that there are many software improvements that
+can still be made to improve power consumption. Some of them are listed
+hereafter for
+future reference. Most of these recommendations, and other details, can be found
+in Application Note AVR1010\cite{avr1010}.
+
+\begin{itemize}
+  \item Turn off hardware modules when they are not used. Most unused
+    peripherals are deactivated in the program's initialization routine.
+    However, to be more power-efficient, each module should only be turned on
+    when it is needed, and immediately deactivated thereafter.
+  \item Set all unused pins to either pull-up or pull-down, and deactivate the
+    digital buffer on pins connected to analog sources.
+  \item Experiment with clock speeds and sources to find the most efficient
+    combination. Since a lot of time is spent waiting for sensor readings, and
+    for the radio to wake up, it may be worth decreasing the processor speed to
+    consume less power. Alternatively, it could be configured to sleep during
+    these periods.
+  \item Disable the JTAG interface.
+
+\end{itemize}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Conclusion}
 
-% TODO : Conclusion
-% ideas
+Overall, the proposal outlined at the beginning of this project has been
+sucessfully implemented. Using the modules developed during this semester
+project, it is now possible for several wireless devices to interact with the
+existing powerline network, and remotely control appliances.
 
-The proposal outlined in the specification was successfully implemented. It is
-possible for several modules to communicate with the powerline network and
-control appliances. 
+The hardware design is functional, and can be demonstrated as requested.
+However, not everything is fully functional, and many areas could be improved.
+Some of these, mostly the hardware changes, are described in section
+\tref{sec:design-changes} of the appendix. During the first phase of the
+project, a lot of time was spent researching solutions. In addition to this, the
+hardware design required more time than expected.
 
-More time than expected was spent on the hardware design, leaving too little
-time to experiment in depth with software, especially with low current usage,
-which was supposed to be one of the main areas to explore. 
+Because of this, too little time was left to develop the software part of the
+project, and run in-depth tests for power consumption. This is quite
+unfortunate, as it was destined to be one of the central points of the design.
 
-In the future, make an effort to get over the initial research part as fast as
-possible, as hardware design has inherent delays that are very handicapping for
-a short project.
+Nevertheless, the time spent on the hardware seems to have yielded a fairly
+decent platform with which to experiment in the future, and I am quite confident
+that by spending some time with the software, it will be possible to achieve
+some interesting results. The tests performed with the current prototypes
+indicate that with very little optimization, it should be possible to run a
+device for several months on one pair of batteries, which was one of our
+objectives for this project.
 
-Nevertheless, the time spent in design seems to have produced a fairly decent
-platform for experimenting with, and by spending a little more time with the
-software, it should be quite easy to get some satisfactory results. \rightarrow
-early tests show that the consumption of the modules is sufficiently low to last
-for several months, and base module with sensors, with \textbf{no sleep} on the
-microcontroller indicate that we can already last about a month on one charge. 
+There are lots of options open for developing the software, of which I would
+like to mention two possible options.
 
-Other thing : one gateway &=& single point of failure. It could be interesting
-to do some high-level network management, to take care of node discovery, find
-nearby gateways, and provide recovery mechanisms when some nodes fail. A beacon
-mode, where each node advertises its presence from time to time might be nice to
-be able to deduce the state and size of the network at any time, and alert the
-user if some nodes are missing (if they run out of batteries for instance).
+First, the current implementation only uses one gateway between the wired and
+wireless network, which stands as a single point of failure : if the gateway
+goes offline for some reason, the whole wireless network will fail. It might be
+interesting to add the possiblity to have several gateways for one network,
+which would serve both to improve the reliability of the network, as well as
+increase its range.
+
+The second point is that the current network is very ``dumb''. The destination
+node is hard-coded into each device's configuration. To be able to serve any
+practical purpose, a network such as this one should offer some form of
+auto-configuration and node discovery. Devices should advertise their presence
+upon joining a network, and it should be possible at any time to build a network
+map. The nodes should probably also implement some form of beacon mode, where
+they report their status periodically to the coordinator, so that the user may
+be notified if some nodes go missing, or are about to run out of power.
+
+All these, I believe, could be worth exploring in the future, and I hope that
+this platform may serve a purpose beyond the scope of this semester project.
+
+\vspace{3cm}
+Ecublens, Saturday January 8th,
+
+\vspace{2cm}
+Andrew Watson
+
+
 
 \pagebreak
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1175,129 +1238,137 @@ some other areas are in need of more attention.
 \pagebreak
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Microcontroller software}
-The following section contains the source code for the nodes. XMEGA-specific
-libraries were provided with Atmel application notes, and can be found as part
-of the XMEGA software framework\furl{http://asf.atmel.no/xmega/readme.html}
 
-The source code for the project is versioned using git and hosted on
+In order to save paper, the source code for the devices will not be reproduced
+in the paper version of this report. All source code, both for the
+microcontrollers and for this report are versioned using git and are hosted on 
 Github\furl{http://github.com}. For the foreseeable future, the code will live
 at the following address : \url{http://github.com/tunebird/semester-1-code}.
 
+The \LaTeX{} source for this report can be found at the following address :
+\url{http://github.com/tunebird/semester-1}.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Project Libraries}
-\label{an:project-libs}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{XBee code}
-\bash{xbee.h}
-\lstinputlisting[language=C]{../code/project_libs/xbee.h}
-\bash{xbee.c}
-\lstinputlisting[language=C]{../code/project_libs/xbee.c}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Hardware definitions}
-\bash{hardware.h}
-\lstinputlisting[language=C]{../code/project_libs/hardware.h}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Debug functions}
-\bash{debug.h}
-\lstinputlisting[language=C]{../code/project_libs/debug.h}
-\bash{debug.c}
-\lstinputlisting[language=C]{../code/project_libs/debug.c}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Powerline interface}
-\bash{powerline.h}
-\lstinputlisting[language=C]{../code/project_libs/powerline.h}
-\bash{powerline.c}
-\lstinputlisting[language=C]{../code/project_libs/powerline.c}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Built-in sensors}
-\bash{builtin\_sensors.h}
-\lstinputlisting[language=C]{../code/project_libs/builtin_sensors.h}
-\bash{builtin\_sensors.c}
-\lstinputlisting[language=C]{../code/project_libs/builtin_sensors.c}
-
-%%%%%%%%%%
-\pagebreak
-%%%%%%%%%%
+ XMEGA-specific libraries were provided with Atmel application notes, and can be
+ found as part of the XMEGA software
+ framework\furl{http://asf.atmel.no/xmega/readme.html}. The files used in this
+ project are included in the online repository for this semester project.
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Motion Sensor Node}
-\label{an:motion-code}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Motion sense library}
-\bash{board\_motion.h}
-\lstinputlisting[language=C]{../code/project_libs/board_motion.h}
-\bash{board\_motion.c}
-\lstinputlisting[language=C]{../code/project_libs/board_motion.c}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Motion sense main file}
-\bash{main.c}
-\lstinputlisting[language=C]{../code/node-motion/main.c}
-
-%%%%%%%%%%
-\pagebreak
-%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Dimmer Node}
-\label{an:dimmer-code}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Dimmer library}
-\bash{board\_dimmer.h}
-\lstinputlisting[language=C]{../code/project_libs/board_dimmer.h}
-\bash{board\_dimmer.c}
-\lstinputlisting[language=C]{../code/project_libs/board_dimmer.c}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Dimmer main file}
-\bash{main.c}
-\lstinputlisting[language=C]{../code/node-dimmer/main.c}
-
-%%%%%%%%%%
-\pagebreak
-%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Environment Sensing Node}
-\label{an:environment-code}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Environment sense library}
-\bash{board\_sensors.h}
-\lstinputlisting[language=C]{../code/project_libs/board_sensors.h}
-\bash{board\_sensors.c}
-\lstinputlisting[language=C]{../code/project_libs/board_sensors.c}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Environment sense main file}
-\bash{main.c}
-\lstinputlisting[language=C]{../code/node-sensors/main.c}
-
-%%%%%%%%%%
-\pagebreak
-%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{ZigBee to Powerline Gateway}
-\label{an:gateway-code}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Environment sense main file}
-\bash{gateway.c}
-\lstinputlisting[language=C]{../code/gateway/gateway.c}
-
-%%%%%%%%%%
-\pagebreak
-%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsection{Project Libraries}
+%\label{an:project-libs}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsection{XBee code}
+%\bash{xbee.h}
+%\lstinputlisting[language=C]{../code/project_libs/xbee.h}
+%\bash{xbee.c}
+%\lstinputlisting[language=C]{../code/project_libs/xbee.c}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsection{Hardware definitions}
+%\bash{hardware.h}
+%\lstinputlisting[language=C]{../code/project_libs/hardware.h}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsection{Debug functions}
+%\bash{debug.h}
+%\lstinputlisting[language=C]{../code/project_libs/debug.h}
+%\bash{debug.c}
+%\lstinputlisting[language=C]{../code/project_libs/debug.c}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsection{Powerline interface}
+%\bash{powerline.h}
+%\lstinputlisting[language=C]{../code/project_libs/powerline.h}
+%\bash{powerline.c}
+%\lstinputlisting[language=C]{../code/project_libs/powerline.c}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsection{Built-in sensors}
+%\bash{builtin\_sensors.h}
+%\lstinputlisting[language=C]{../code/project_libs/builtin_sensors.h}
+%\bash{builtin\_sensors.c}
+%\lstinputlisting[language=C]{../code/project_libs/builtin_sensors.c}
+%
+%%%%%%%%%%%
+%\pagebreak
+%%%%%%%%%%%
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsection{Motion Sensor Node}
+%\label{an:motion-code}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsection{Motion sense library}
+%\bash{board\_motion.h}
+%\lstinputlisting[language=C]{../code/project_libs/board_motion.h}
+%\bash{board\_motion.c}
+%\lstinputlisting[language=C]{../code/project_libs/board_motion.c}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsection{Motion sense main file}
+%\bash{main.c}
+%\lstinputlisting[language=C]{../code/node-motion/main.c}
+%
+%%%%%%%%%%%
+%\pagebreak
+%%%%%%%%%%%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsection{Dimmer Node}
+%\label{an:dimmer-code}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsection{Dimmer library}
+%\bash{board\_dimmer.h}
+%\lstinputlisting[language=C]{../code/project_libs/board_dimmer.h}
+%\bash{board\_dimmer.c}
+%\lstinputlisting[language=C]{../code/project_libs/board_dimmer.c}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsection{Dimmer main file}
+%\bash{main.c}
+%\lstinputlisting[language=C]{../code/node-dimmer/main.c}
+%
+%%%%%%%%%%%
+%\pagebreak
+%%%%%%%%%%%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsection{Environment Sensing Node}
+%\label{an:environment-code}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsection{Environment sense library}
+%\bash{board\_sensors.h}
+%\lstinputlisting[language=C]{../code/project_libs/board_sensors.h}
+%\bash{board\_sensors.c}
+%\lstinputlisting[language=C]{../code/project_libs/board_sensors.c}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsection{Environment sense main file}
+%\bash{main.c}
+%\lstinputlisting[language=C]{../code/node-sensors/main.c}
+%
+%%%%%%%%%%%
+%\pagebreak
+%%%%%%%%%%%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsection{ZigBee to Powerline Gateway}
+%\label{an:gateway-code}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsection{Environment sense main file}
+%\bash{gateway.c}
+%\lstinputlisting[language=C]{../code/gateway/gateway.c}
+%
+%%%%%%%%%%%
+%\pagebreak
+%%%%%%%%%%%
 
 
 \end{document}
