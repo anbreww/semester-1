@@ -190,9 +190,11 @@ set of wireless nodes. These nodes should provide the ability to place motion
 sensors, environmental sensors, and dimmer switches anywhere within a certain
 distance of the powerline network. 
 
-% todo : example use case? light switch on a desk or close to a home
-% entertainment system. monitor the temperature/humidity in a wine cellar.
-% detect people arriving at the door
+Some example applications would include placing a light switch on a desk, or
+close to the remote control for a home entertainment system, to be able to dim
+the lights without leaving one's chair. Humidity and temperature sensors could
+be placed outside, or to monitor a wine cellar, without the need to install any
+wiring.
 
 The goal for this semester project is not necessarily to produce a final design
 for a wireless sensor network, but rather to produce a working demonstration to
@@ -264,19 +266,18 @@ issue in the context of a semester project.
 Lithium Polymer, Lithium ion and NiMH accumulators were both considered as
 possible power source options. 
 
-% TODO : get some data for self-discharge
 \begin{table}
   \centering
-  \begin{tabular}{l|l|l|l}
-    Solution	& Nominal Voltage	& Self-discharge	& Complexity \\
+  \begin{tabular}{l|l|c}
+    Solution	& Nominal Voltage	& Circuit Complexity \\
     \hline
-    NiMH 	& \unit[0.7-1.4]{V}	& Very low		& -	     \\
-    NiMH x2 	& \unit[1.4-2.8]{V}	& Very low		& -	     \\
-    NiMH x3 	& \unit[2.1-4.5]{V}	& Very low		& -	     \\
-    LiPo 	& \unit[2.7-4.23]{V}	& low			& ++	     \\
-    Li-Ion 	& \unit[2.7-4.23]{V}	& 5-10\%		& ++	     \\
+    NiMH 	& \unit[0.7-1.4]{V}	& -	     \\
+    NiMH x2 	& \unit[1.4-2.8]{V}	& -	     \\
+    NiMH x3 	& \unit[2.1-4.5]{V}	& -	     \\
+    LiPo 	& \unit[2.7-4.23]{V}	& ++	     \\
+    Li-Ion 	& \unit[2.7-4.23]{V}	& ++	     \\
   \end{tabular}
-  \caption{Comparison of power sources}
+  \caption{Comparative overview of power sources}
   \label{tab:battery-comparison}
 \end{table}
 
@@ -294,7 +295,8 @@ All three solutions considered nowadays seem to offer very good self-discharge
 rates, even in NiMH batteries, which used not to be the case. In recent years,
 some commercial solutions have surfaced, offering batteries which offer
 virtually no self-discharge past 70\% of their original
-charge\cite{testingeneloop}.
+charge\cite{testingeneloop}. A fairly recent comparison of self-discharge rates
+with these newer cells can be found at \cite{nimhvslipo}.
 
 In light of these observations, it was decided that the modules would be powered
 by two AA size NiMH rechargeable batteries. This offers the most flexibility for
@@ -792,7 +794,6 @@ Studio\furl{http://www.seeedstudio.com/depot/tiny-pir-motion-sensor-module-p-277
 
 The specifications on this device are very terse, but it is claimed to use a
 constant \unit[50]{$\mu$A} current.
-% todo : give some results for power consumption of motion detector with supply
 
 The hardware design of this board is straightforward : a charge pump converter
 provides the supply voltage to the sensor(s), whose inputs are connected to two
@@ -817,7 +818,12 @@ interrupt is triggered. For optimal performance though, it would be best to use
 a sensor which can operate at the same voltages as the base module, therefore
 improving the overall efficiency by removing the charge pump regulator.
 
-% TODO : insert measurements of power consumption
+A few measurement were made of the motion board add-on. Regardless of supply
+voltage (which was tested from \unit[2]{V} to \unit[3.2]{V}, the current
+consumption of the motion sensor with its DC-DC converter came in at
+$\unit[250]{\mu{}A}$ in ``standby'' mode, and went up to
+$\unit[300]{\mu{}A}$ when movement was detected. This corresponds to a power
+usage of $\unit[500]{\mu{}W}$ to $\unit[1]{mW}$.
 
 In the current demonstration, the motion sensor node is configured to turn on a
 lamp when motion is detected. If no movement is detected for a period of 30
@@ -994,11 +1000,44 @@ compatibility with the existing modules.
 \section{Test results}
 % TODO : results
 
+Sensor node : XBee in Power mode ``high'', boost mode disabled, end node
+functionality, uses 14mA average, with a transmission every 500ms
+
+With xbee sleeping, uc on, and waking sensors periodically, consumption is 3mA
+which should yield approx one month on two AA batteries.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Conclusion}
 
 % TODO : Conclusion
+% ideas
+
+The proposal outlined in the specification was successfully implemented. It is
+possible for several modules to communicate with the powerline network and
+control appliances. 
+
+More time than expected was spent on the hardware design, leaving too little
+time to experiment in depth with software, especially with low current usage,
+which was supposed to be one of the main areas to explore. 
+
+In the future, make an effort to get over the initial research part as fast as
+possible, as hardware design has inherent delays that are very handicapping for
+a short project.
+
+Nevertheless, the time spent in design seems to have produced a fairly decent
+platform for experimenting with, and by spending a little more time with the
+software, it should be quite easy to get some satisfactory results. \rightarrow
+early tests show that the consumption of the modules is sufficiently low to last
+for several months, and base module with sensors, with \textbf{no sleep} on the
+microcontroller indicate that we can already last about a month on one charge. 
+
+Other thing : one gateway &=& single point of failure. It could be interesting
+to do some high-level network management, to take care of node discovery, find
+nearby gateways, and provide recovery mechanisms when some nodes fail. A beacon
+mode, where each node advertises its presence from time to time might be nice to
+be able to deduce the state and size of the network at any time, and alert the
+user if some nodes are missing (if they run out of batteries for instance).
 
 \pagebreak
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1020,7 +1059,6 @@ in case the files or PCBs are to be re-used in a future design.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{UART Interface}
-% TODO : check that it's been fixed
 On the current fabricated version of the modules, the RX and TX pins were
 inverted in the schematic. Obviously, the RX pin of the gateway should go to the
 TX pin of the powerline module and vice versa. On the current gateway, this has
@@ -1031,7 +1069,9 @@ any of the other modules to connect to a powerline module!
 In addition to this, the connector footprint is upside down. Since it is a
 side-facing connector, it is not possible to reverse it. Therefore, \emph{the
 cable used to connect the gateway to the powerline modules must be reversed}.
-This error has \emph{not been corrected} in the PCB files.
+This error has \emph{not been corrected} in the PCB files. This probably
+deserves to be fixed in the next version, to avoid confusion with connecting
+cables.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Ambient light sensor}
